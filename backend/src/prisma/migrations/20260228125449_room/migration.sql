@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Subject" ADD COLUMN     "room" DOUBLE PRECISION NOT NULL DEFAULT 6;

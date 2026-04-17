@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Subject" ADD COLUMN     "periods" DOUBLE PRECISION NOT NULL DEFAULT 6;

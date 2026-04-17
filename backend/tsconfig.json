@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "index.ts",
+    "config.ts",
+    "src/config/**/*.ts",
+    "src/middlewares/**/*.ts",
+    "src/modules/**/*.routes.ts",
+    "src/modules/**/*.schema.ts",
+    "src/prisma/db.ts",
+    "src/services/events/**/*.ts",
+    "src/services/notification/notification.handler.ts",
+    "src/services/notification/notification.controller.js",
+    "src/services/ws/**/*.ts",
+    "src/websocket/**/*.ts",
+    "src/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/routes/**/*"
+  ]
+}

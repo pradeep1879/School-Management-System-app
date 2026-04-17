@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "config.ts",
+    "src/middlewares/**/*.ts",
+    "src/modules/activity/activity.schema.ts",
+    "src/types/**/*.d.ts",
+    "src/types/**/*.ts"
+  ]
+}

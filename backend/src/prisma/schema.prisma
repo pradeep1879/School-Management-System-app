@@ -328,6 +328,8 @@ model FeeComponent {
   name              String   // Tuition, Transport, Exam
   amount            Float
   frequency         FeeFrequency
+  dueDay            Int
+  dueMonth          Int?
   isOptional        Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

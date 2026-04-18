@@ -21,12 +21,12 @@ const StudentListCard = ({
   onSelect,
 }: Props) => {
   return (
-    <Card className="custom-scrollbar h-162.5 overflow-y-auto xl:col-span-1">
+    <Card className="custom-scrollbar min-w-0 xl:col-span-1 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto">
       <CardHeader>
         <CardTitle>Students</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 min-w-0">
 
         {!students && !loading&& (
           <div className="flex items-center justify-center h-100 text-sm text-muted-foreground">
@@ -54,19 +54,20 @@ const StudentListCard = ({
           students?.map((student) => (
             <div
               key={student.id}
-              className={`flex items-center justify-between p-3 rounded-lg border transition ${
+              className={`flex flex-col gap-3 rounded-lg border p-3 transition sm:flex-row sm:items-center sm:justify-between ${
                 selectedStudentId === student.id
                   ? "bg-primary/5 border-primary/30"
                   : "hover:bg-muted/40"
               }`}
             >
-              <p className="font-medium">
+              <p className="min-w-0 break-words font-medium">
                 {student.studentName}({student?.rollNumber})
               </p>
 
               <Button
                 size="sm"
                 variant="outline"
+                className="w-full sm:w-auto"
                 onClick={() => onSelect(student.id)}
               >
                 View

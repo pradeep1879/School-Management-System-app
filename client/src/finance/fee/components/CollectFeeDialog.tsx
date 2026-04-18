@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,17 @@ const CollectPaymentDialog = ({
   const { mutate, isPending } =
     useCollectPayment(studentId)
 
+  useEffect(() => {
+    if (open) {
+      setAmountPaid(maxAmount)
+    }
+  }, [open, maxAmount])
+
   const handleSubmit = () => {
+    if (amountPaid <= 0 || amountPaid > maxAmount) {
+      return
+    }
+
     mutate(
       {
         installmentId,
@@ -77,7 +87,12 @@ const CollectPaymentDialog = ({
             <Input
               type="number"
               value={amountPaid}
+              min={0}
               max={maxAmount}
+              step={1}
+              onWheel={(e) =>
+                (e.currentTarget as HTMLInputElement).blur()
+              }
               onChange={(e) =>
                 setAmountPaid(Number(e.target.value))
               }
@@ -116,7 +131,11 @@ const CollectPaymentDialog = ({
 
           <Button
             onClick={handleSubmit}
-            disabled={isPending}
+            disabled={
+              isPending ||
+              amountPaid <= 0 ||
+              amountPaid > maxAmount
+            }
             className="w-full"
           >
             {isPending

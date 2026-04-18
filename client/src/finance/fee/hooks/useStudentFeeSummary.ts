@@ -11,8 +11,9 @@ export interface FeeSummaryResponse {
     id: string
     title: string
     amount: number
+    dueAmount: number
     dueDate: string
-    status: "PAID" | "UNPAID" | "PARTIAL" | "OVERDUE"
+    status: "PAID" | "PENDING" | "PARTIAL" | "OVERDUE"
   }[]
   payments: {
     id: string

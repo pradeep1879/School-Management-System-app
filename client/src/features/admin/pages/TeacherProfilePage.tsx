@@ -22,7 +22,6 @@ export default function TeacherProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, isError } = useTeacherById(id!);
-  console.log(data, isError);
 
   if (isLoading) {
     return (
@@ -149,13 +148,13 @@ export default function TeacherProfilePage() {
       </Card>
 
       {/* ================= TABS ================= */}
-      <div className="border-b overflow-x-auto custom-scrollbar">
-        <div className="flex gap-6 min-w-max">
+      <div className="custom-scrollbar overflow-x-auto border-b">
+        <div className="flex min-w-max gap-4 sm:gap-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-3 text-sm font-medium relative transition ${
+              className={`relative shrink-0 pb-3 text-sm font-medium transition ${
                 activeTab === tab.id
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"

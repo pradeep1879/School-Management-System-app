@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTeachers } from "@/features/teacher/hooks/useTeacher";
+import { normalizeSessionInput } from "@/features/class/utils/session";
 
 interface AddClassProps {
   setOpen: (value: boolean) => void;
@@ -30,8 +31,8 @@ interface AddClassProps {
 
 interface ClassFormData {
   slug: string;
-  section?: string;
-  session?: string;
+  section: string;
+  session: string;
   teacherId?: string;
 }
 
@@ -48,12 +49,18 @@ const AddClass = ({ setOpen }: AddClassProps) => {
   const { data: teachersData } = useTeachers(1, 100);
 
   const onSubmit = (data: ClassFormData) => {
-    mutate(data, {
+    mutate(
+      {
+        ...data,
+        session: normalizeSessionInput(data.session),
+      },
+      {
       onSuccess: () => {
         reset();
         setOpen(false);
       },
-    });
+      }
+    );
   };
 
   return (
@@ -85,20 +92,39 @@ const AddClass = ({ setOpen }: AddClassProps) => {
           <Field>
             <FieldLabel>Section</FieldLabel>
             <Input
-              {...register("section")}
+              {...register("section", {
+                required: "Section is required",
+              })}
               disabled={isPending}
               placeholder="e.g. A"
             />
+            {errors.section && (
+              <FieldDescription className="text-red-500">
+                {errors.section.message}
+              </FieldDescription>
+            )}
           </Field>
 
           {/* Session */}
           <Field>
             <FieldLabel>Session</FieldLabel>
             <Input
-              {...register("session")}
+              {...register("session", {
+                required: "Session is required",
+              })}
               disabled={isPending}
               placeholder="2024-2025"
+              onBlur={(e) => {
+                e.target.value = normalizeSessionInput(
+                  e.target.value
+                );
+              }}
             />
+            {errors.session && (
+              <FieldDescription className="text-red-500">
+                {errors.session.message}
+              </FieldDescription>
+            )}
           </Field>
 
           {/* Assign Teacher */}

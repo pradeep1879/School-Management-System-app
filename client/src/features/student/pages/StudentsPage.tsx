@@ -13,7 +13,7 @@ const StudentsPage = () => {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Students</h1>
 
         <Dialog open={open} onOpenChange={setOpen}>
@@ -31,7 +31,7 @@ const StudentsPage = () => {
         </CardHeader>
 
         <CardContent>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
 
             <Select>
               {/* class options later */}
@@ -56,8 +56,8 @@ const StudentsPage = () => {
         </CardHeader>
 
         <CardContent>
-          <div className="custom-scrollbar overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="border-b">
                 <tr>
                   <th className="p-3 text-left">Name</th>

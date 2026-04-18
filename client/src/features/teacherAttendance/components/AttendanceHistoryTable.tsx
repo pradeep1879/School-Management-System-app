@@ -44,8 +44,8 @@ export default function TeacherAttendanceHistoryStatsTable() {
   const records = data || [];
 
   return (
-    <div className="max-h-125  overflow-x-auto custom-scrollbar">
-      <div className="min-w-100">
+    <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
+      <div className="min-w-[720px]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -65,11 +65,11 @@ export default function TeacherAttendanceHistoryStatsTable() {
               
               {/* Teacher Name */}
               <TableCell className="font-medium">
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
                     {item.teacherName?.charAt(0)}
                   </div>
-                  {item.teacherName}
+                  <span className="truncate">{item.teacherName}</span>
                 </div>
               </TableCell>
 

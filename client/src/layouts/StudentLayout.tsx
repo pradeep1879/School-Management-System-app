@@ -7,13 +7,13 @@ import StudentNavbar from "@/features/student/components/StudentNavbar";
 const StudentLayout = () => {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-screen w-full overflow-x-clip bg-background">
         <StudentSidebar />
 
         <SidebarInset>
           <StudentNavbar />
 
-          <main className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
+          <main className="flex-1 min-w-0 overflow-x-clip px-3 py-4 sm:px-6 lg:px-8">
             <Outlet />
           </main>
         </SidebarInset>

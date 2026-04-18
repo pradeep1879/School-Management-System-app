@@ -25,6 +25,7 @@ import {
 import { useTeachers } from "@/features/teacher/hooks/useTeacher";
 import { useClassDetail } from "../hooks/useClassDetail";
 import { useEffect } from "react";
+import { normalizeSessionInput } from "@/features/class/utils/session";
 
 interface UpdateClassProps {
   classId: string;
@@ -75,7 +76,12 @@ const UpdateClass = ({ classId, setOpen }: UpdateClassProps) => {
     updateClass(
       {
         classId,
-        data: formData
+        data: {
+          ...formData,
+          session: formData.session
+            ? normalizeSessionInput(formData.session)
+            : formData.session,
+        }
       },
       {
         onSuccess: () =>{
@@ -128,6 +134,11 @@ const UpdateClass = ({ classId, setOpen }: UpdateClassProps) => {
               {...register("session")}
               disabled={isPending}
               placeholder="2024-2025"
+              onBlur={(e) => {
+                e.target.value = normalizeSessionInput(
+                  e.target.value
+                );
+              }}
             />
           </Field>
 

@@ -1,47 +1,163 @@
 import { client } from "../../prisma/db.ts";
 import { generateInstallments } from "./fee.installment.generator.ts";
 import { calculateLateFee } from "./fee.utils.ts";
+import { normalizeAcademicSession } from "../../utils/session.ts";
+
+const getInstallmentPayableTotal = (installment) => {
+  const structure = installment.feeComponent?.feeStructure;
+  const baseAmount = Math.max(
+    0,
+    (installment.feeComponent?.amount ??
+      installment.totalAmount) -
+      (installment.discountAmount || 0)
+  );
+  const lateFee = structure
+    ? calculateLateFee(installment, structure)
+    : 0;
+
+  return {
+    baseAmount,
+    lateFee,
+    payableTotal: baseAmount + lateFee,
+  };
+};
+
+const getInstallmentStatus = (
+  installment,
+  payableTotal,
+  paidAmount
+) => {
+  if (paidAmount >= payableTotal) {
+    return "PAID";
+  }
+
+  const today = new Date();
+  const isOverdue = today > installment.dueDate;
+
+  if (paidAmount > 0) {
+    return isOverdue ? "OVERDUE" : "PARTIAL";
+  }
+
+  return isOverdue ? "OVERDUE" : "PENDING";
+};
 
 
-// create structure, this is only for admin
-export const createFeeStructure = async (body, role) => {
-  const { classId, session, lateFeeType, lateFeeAmount } = body;
+export const createFeeStructure = async (
+  body,
+  role,
+  adminId
+) => {
+  const {
+    classId,
+    lateFeeType,
+    lateFeeAmount,
+  } = body;
+  const session = normalizeAcademicSession(body.session);
 
   if(role !== "admin"){
     throw new Error("Unauthorized")
   }
-  const structure = await client.feeStructure.create({
-    data: {
+  const classRecord = await client.class.findFirst({
+    where: {
+      id: classId,
+      adminId,
+    },
+    select: {
+      id: true,
+      session: true,
+    },
+  });
+
+  if (!classRecord) {
+    throw new Error("Invalid class");
+  }
+
+  if (session !== classRecord.session) {
+    throw new Error(
+      `Fee structure session must match the class session (${classRecord.session})`
+    );
+  }
+
+  const effectiveSession = classRecord.session;
+
+  const existingStructure =
+    await client.feeStructure.findUnique({
+      where: {
+        classId_session: {
+          classId,
+          session: effectiveSession,
+        },
+      },
+    });
+
+  const structure = await client.feeStructure.upsert({
+    where: {
+      classId_session: {
+        classId,
+        session: effectiveSession,
+      },
+    },
+    update: {
+      lateFeeType,
+      lateFeeAmount,
+    },
+    create: {
       classId,
-      session,
+      session: effectiveSession,
       lateFeeType,
       lateFeeAmount,
     },
   });
 
   return {
-    message: "Fee structure created",
+    message: existingStructure
+      ? "Existing fee structure opened for this class and session"
+      : "Fee structure created",
+    reusedExisting: Boolean(existingStructure),
     structure,
   };
 };
 
-// add component , this also for admin
-export const addFeeComponent = async (body) => {
+export const addFeeComponent = async (body, adminId) => {
   const {
     feeStructureId,
     name,
     amount,
     frequency,
+    dueDay,
+    dueMonth,
     isOptional,
   } = body;
+
+  const feeStructure =
+    await client.feeStructure.findFirst({
+      where: {
+        id: feeStructureId,
+        class: {
+          adminId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (!feeStructure) {
+    throw new Error("Fee structure not found");
+  }
 
   const component =
     await client.feeComponent.create({
       data: {
         feeStructureId,
         name,
-        amount,
+        amount: Number(amount),
         frequency,
+        dueDay: Number(dueDay),
+        dueMonth:
+          dueMonth === undefined || dueMonth === null
+            ? null
+            : Number(dueMonth),
         isOptional,
       },
     });
@@ -55,8 +171,26 @@ export const addFeeComponent = async (body) => {
 
 // generate installments, admin
 export const generateInstallmentsForStructure = async (
-  structureId
+  structureId,
+  adminId
 ) => {
+  const feeStructure =
+    await client.feeStructure.findFirst({
+      where: {
+        id: structureId,
+        class: {
+          adminId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (!feeStructure) {
+    throw new Error("Fee structure not found");
+  }
+
   return await generateInstallments(structureId);
 };
 
@@ -84,18 +218,15 @@ export const collectPayment = async (body, adminId) => {
     throw new Error("Installment not found");
   }
 
-   if (installment.status === "PAID") {
+  const { baseAmount, lateFee, payableTotal } =
+    getInstallmentPayableTotal(installment);
+
+  if (installment.paidAmount >= payableTotal) {
     throw new Error("This installment is already paid");
   }
 
-  const structure = installment.feeComponent.feeStructure;
-
-  // Calculate Late Fee
-  const lateFee = calculateLateFee(installment, structure);
-
-  const updatedTotal = installment.totalAmount + lateFee;
-
-  const dueAmount = updatedTotal - installment.paidAmount;
+  const dueAmount =
+    payableTotal - installment.paidAmount;
 
   //  Prevent Overpayment
   if (amountPaid > dueAmount) {
@@ -106,7 +237,11 @@ export const collectPayment = async (body, adminId) => {
 
   const newPaidAmount = installment.paidAmount + amountPaid;
 
-  const status = newPaidAmount >= updatedTotal ? "PAID" : "PARTIAL";
+  const status = getInstallmentStatus(
+    installment,
+    payableTotal,
+    newPaidAmount
+  );
 
   await client.$transaction([
     client.payment.create({
@@ -122,8 +257,8 @@ export const collectPayment = async (body, adminId) => {
     client.studentFeeInstallment.update({
       where: { id: installmentId },
       data: {
+        totalAmount: baseAmount,
         paidAmount: newPaidAmount,
-        totalAmount: updatedTotal,
         status,
       },
     }),
@@ -132,7 +267,7 @@ export const collectPayment = async (body, adminId) => {
   return {
     message: "Payment collected successfully",
     lateFeeApplied: lateFee,
-    remainingDue: updatedTotal - newPaidAmount,
+    remainingDue: payableTotal - newPaidAmount,
   };
 };
 
@@ -152,7 +287,11 @@ export const getStudentFeeSummary = async (studentId) => {
   const installments = await client.studentFeeInstallment.findMany({
     where: { studentId },
     include: {
-      feeComponent: true,
+      feeComponent: {
+        include: {
+          feeStructure: true,
+        },
+      },
       payments: true,
     },
     orderBy: { dueDate: "asc" },
@@ -162,7 +301,10 @@ export const getStudentFeeSummary = async (studentId) => {
   let paid = 0;
 
   installments.forEach((i) => {
-    total += i.totalAmount;
+    const { payableTotal } =
+      getInstallmentPayableTotal(i);
+
+    total += payableTotal;
     paid += i.paidAmount;
   });
 
@@ -170,17 +312,29 @@ export const getStudentFeeSummary = async (studentId) => {
     summary: {
       totalAmount: total,
       paidAmount: paid,
-      dueAmount: total - paid,
+      dueAmount: Math.max(0, total - paid),
     },
 
-    installments: installments.map((i) => ({
-      id: i.id,
-      title: i.feeComponent.name,
-      amount: i.totalAmount,
-      dueAmount: i.totalAmount - i.paidAmount,
-      dueDate: i.dueDate,
-      status: i.status,
-    })),
+    installments: installments.map((i) => {
+      const { payableTotal } =
+        getInstallmentPayableTotal(i);
+
+      return {
+        id: i.id,
+        title: i.feeComponent.name,
+        amount: payableTotal,
+        dueAmount: Math.max(
+          0,
+          payableTotal - i.paidAmount
+        ),
+        dueDate: i.dueDate,
+        status: getInstallmentStatus(
+          i,
+          payableTotal,
+          i.paidAmount
+        ),
+      };
+    }),
 
     payments: installments.flatMap((i) =>
       i.payments.map((p) => ({
@@ -200,7 +354,15 @@ export const getClassFeeSummary = async (classId) => {
   const students = await client.student.findMany({
     where: { classId },
     include: {
-      feeInstallments: true,
+      feeInstallments: {
+        include: {
+          feeComponent: {
+            include: {
+              feeStructure: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -215,13 +377,21 @@ export const getClassFeeSummary = async (classId) => {
     let hasOverdue = false;
 
     student.feeInstallments.forEach((inst) => {
-      totalAmount += inst.totalAmount;
+      const { payableTotal } =
+        getInstallmentPayableTotal(inst);
+      const status = getInstallmentStatus(
+        inst,
+        payableTotal,
+        inst.paidAmount
+      );
+
+      totalAmount += payableTotal;
       totalPaid += inst.paidAmount;
 
-      studentTotal += inst.totalAmount;
+      studentTotal += payableTotal;
       studentPaid += inst.paidAmount;
 
-      if (inst.status === "OVERDUE") {
+      if (status === "OVERDUE") {
         hasOverdue = true;
       }
     });
@@ -267,19 +437,43 @@ export const getClassFeeSummary = async (classId) => {
 
 // this is for admin finance dashboard
 export const getAdminFinanceSummary = async () => {
-  const totalInstallments = await client.studentFeeInstallment.aggregate({
-    _sum: { totalAmount: true },
+  const installments = await client.studentFeeInstallment.findMany({
+    include: {
+      feeComponent: {
+        include: {
+          feeStructure: true,
+        },
+      },
+      student: {
+        include: {
+          class: true,
+        },
+      },
+    },
   });
 
-  const totalPaid = await client.studentFeeInstallment.aggregate({
-    _sum: { paidAmount: true },
+  let totalRevenue = 0;
+  let totalCollected = 0;
+  let overdueCount = 0;
+
+  installments.forEach((installment) => {
+    const { payableTotal } =
+      getInstallmentPayableTotal(installment);
+    const status = getInstallmentStatus(
+      installment,
+      payableTotal,
+      installment.paidAmount
+    );
+
+    totalRevenue += payableTotal;
+    totalCollected += installment.paidAmount;
+
+    if (status === "OVERDUE") {
+      overdueCount++;
+    }
   });
 
   const totalStudents = await client.student.count();
-
-  const overdueCount = await client.studentFeeInstallment.count({
-    where: { status: "OVERDUE" },
-  });
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -296,7 +490,15 @@ export const getAdminFinanceSummary = async () => {
     include: {
       students: {
         include: {
-          feeInstallments: true,
+          feeInstallments: {
+            include: {
+              feeComponent: {
+                include: {
+                  feeStructure: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -308,7 +510,10 @@ export const getAdminFinanceSummary = async () => {
 
     cls.students.forEach((s) => {
       s.feeInstallments.forEach((i) => {
-        total += i.totalAmount;
+        const { payableTotal } =
+          getInstallmentPayableTotal(i);
+
+        total += payableTotal;
         paid += i.paidAmount;
       });
     });
@@ -344,18 +549,21 @@ export const getAdminFinanceSummary = async () => {
   }));
 
   // Overdue Students List
-  const overdueInstallments = await client.studentFeeInstallment.findMany({
-    where: { status: "OVERDUE" },
-    include: {
-      student: {
-        include: { class: true },
-      },
-    },
-  });
-
   const overdueMap = new Map();
 
-  overdueInstallments.forEach((inst) => {
+  installments.forEach((inst) => {
+    const { payableTotal } =
+      getInstallmentPayableTotal(inst);
+    const status = getInstallmentStatus(
+      inst,
+      payableTotal,
+      inst.paidAmount
+    );
+
+    if (status !== "OVERDUE") {
+      return;
+    }
+
     const key = inst.student.id;
 
     if (!overdueMap.has(key)) {
@@ -367,14 +575,16 @@ export const getAdminFinanceSummary = async () => {
       });
     }
 
-    overdueMap.get(key).dueAmount += inst.totalAmount - inst.paidAmount;
+    overdueMap.get(key).dueAmount += Math.max(
+      0,
+      payableTotal - inst.paidAmount
+    );
   });
 
   return {
-    totalRevenue: totalInstallments._sum.totalAmount || 0,
-    totalCollected: totalPaid._sum.paidAmount || 0,
-    totalDue:
-      (totalInstallments._sum.totalAmount || 0) - (totalPaid._sum.paidAmount || 0),
+    totalRevenue,
+    totalCollected,
+    totalDue: Math.max(0, totalRevenue - totalCollected),
       
     todayCollection: todayPayments._sum.amountPaid || 0,
     totalStudents,

@@ -23,12 +23,12 @@ const StudentFeeDetails = ({
   
 
   return (
-    <Card className="custom-scrollbar h-162.5 overflow-y-auto xl:col-span-2">
+    <Card className="custom-scrollbar min-w-0 xl:col-span-2 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto">
       <CardHeader>
         <CardTitle>Student Fee Details</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="min-w-0 space-y-6">
 
         {/* 🚫 No Student Selected */}
         {!studentId && (
@@ -41,7 +41,7 @@ const StudentFeeDetails = ({
         {studentId && loading && (
           <>
             {/* Summary Skeleton */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
                 <Card key={index} className="p-4 space-y-3">
                   <Skeleton className="h-3 w-16" />
@@ -70,7 +70,7 @@ const StudentFeeDetails = ({
         {studentId && !loading && feeData && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Card className="p-4 text-center border hover:shadow-sm transition">
                 <p className="text-sm text-muted-foreground">
                   Total

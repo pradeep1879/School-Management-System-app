@@ -1,9 +1,11 @@
 // @ts-nocheck
 import { client } from "../../prisma/db.ts";
 import { buildUpdateData } from "../../utils/updateData.ts";
+import { normalizeAcademicSession } from "../../utils/session.ts";
 
 export const createClass = async (body, adminId) => {
-  const { slug, section, session, teacherId } = body;
+  const { slug, section, teacherId } = body;
+  const session = normalizeAcademicSession(body.session);
 
   // Duplicate check
   const existingClass = await client.class.findFirst({
@@ -32,7 +34,7 @@ export const createClass = async (body, adminId) => {
 
 export const updateClass = async(body, adminId, classId) =>{
   if (!classId) {
-    return res.status(400).json({ message: "Class ID is required" });
+    throw new Error("Class ID is required");
   }
   const existingClass = await client.class.findFirst({
     where:{
@@ -41,6 +43,15 @@ export const updateClass = async(body, adminId, classId) =>{
     select:{
       id: true,
       adminId: true,
+      slug: true,
+      section: true,
+      session: true,
+      _count: {
+        select: {
+          students: true,
+          feeStructures: true,
+        },
+      },
     }
   });
 
@@ -53,6 +64,50 @@ export const updateClass = async(body, adminId, classId) =>{
   }
 
   const updateData = buildUpdateData(body);
+
+  if (updateData.session) {
+    updateData.session = normalizeAcademicSession(
+      updateData.session
+    );
+  }
+
+  const nextSlug = updateData.slug ?? existingClass.slug;
+  const nextSection =
+    updateData.section ?? existingClass.section;
+  const nextSession =
+    updateData.session ?? existingClass.session;
+
+  const duplicateClass = await client.class.findFirst({
+    where: {
+      id: {
+        not: classId,
+      },
+      adminId,
+      slug: nextSlug,
+      section: nextSection,
+      session: nextSession,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (duplicateClass) {
+    throw new Error(
+      "Another class already exists with the same class, section, and session"
+    );
+  }
+
+  if (
+    updateData.session &&
+    updateData.session !== existingClass.session &&
+    (existingClass._count.students > 0 ||
+      existingClass._count.feeStructures > 0)
+  ) {
+    throw new Error(
+      "Session cannot be changed once students or fee structures exist for this class"
+    );
+  }
 
   if(updateData.teacherId){
     const teacher = await client.teacher.findFirst({
@@ -112,14 +167,19 @@ export const deleteClass = async (classId, adminId) => {
 export const getAllClasses = async (query, adminId) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
+  const session = query.session
+    ? normalizeAcademicSession(query.session)
+    : undefined;
 
   const skip = (page - 1) * limit;
+  const whereCondition = {
+    adminId,
+    ...(session && { session }),
+  };
 
   const [classes, total] = await Promise.all([
     client.class.findMany({
-      where: {
-        adminId, //  only admin's classes
-      },
+      where: whereCondition,
       skip,
       take: limit,
       select: {
@@ -144,7 +204,7 @@ export const getAllClasses = async (query, adminId) => {
     }),
 
     client.class.count({
-      where: { adminId },
+      where: whereCondition,
     }),
   ]);
 
@@ -168,9 +228,17 @@ export const getClassDropdown = async (adminId) => {
       section: true,
       session: true,
     },
-    orderBy: {
-      slug: "asc",
-    },
+    orderBy: [
+      {
+        session: "desc",
+      },
+      {
+        slug: "asc",
+      },
+      {
+        section: "asc",
+      },
+    ],
   });
 
   return {

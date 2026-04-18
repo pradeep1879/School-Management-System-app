@@ -7,6 +7,8 @@ interface AddFeeComponentPayload {
   name: string;
   amount: number;
   frequency: "MONTHLY" | "QUARTERLY" | "YEARLY" | "ONE_TIME";
+  dueDay: number;
+  dueMonth?: number;
   isOptional?: boolean;
 }
 

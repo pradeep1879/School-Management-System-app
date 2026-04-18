@@ -52,8 +52,8 @@ const TeachersTable = ({ limit = 10 }: TeachersTableProps) => {
       {/* Table */}
       {!isLoading && !isError && (
         <>
-          <div className="max-h-125 overflow-auto custom-scrollbar">
-            <div className="min-w-175">
+          <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
+            <div className="min-w-[760px]">
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
@@ -75,7 +75,7 @@ const TeachersTable = ({ limit = 10 }: TeachersTableProps) => {
                       className="cursor-pointer hover:bg-muted/40 transition"
                     >
                       <TableCell>
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={teacher.imageUrl} />
                             <AvatarFallback>
@@ -83,11 +83,11 @@ const TeachersTable = ({ limit = 10 }: TeachersTableProps) => {
                             </AvatarFallback>
                           </Avatar>
 
-                          <div>
-                            <p className="font-medium">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
                               {teacher.teacherName}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="truncate text-xs text-muted-foreground">
                               {teacher.experience}
                             </p>
                           </div>
@@ -123,12 +123,12 @@ const TeachersTable = ({ limit = 10 }: TeachersTableProps) => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-center text-sm text-muted-foreground sm:text-left">
               Page {page} of {totalPages}
             </p>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
                 disabled={page === 1}

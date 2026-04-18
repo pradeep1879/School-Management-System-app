@@ -36,6 +36,7 @@ export const studentLoginSchema = {
 export const studentListQuerySchema = {
   query: paginationQuerySchema.extend({
     classId: z.string().optional(),
+    session: z.string().optional(),
   }),
 };
 

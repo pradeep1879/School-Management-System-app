@@ -4,7 +4,11 @@ import * as feeService from "./fee.service.ts";
 
 export const createFeeStructure = async (req, res, next) => {
   try {
-    const data = await feeService.createFeeStructure(req.body, req.role);
+    const data = await feeService.createFeeStructure(
+      req.body,
+      req.role,
+      req.userId
+    );
     res.status(201).json(data);
   } catch (error) {
     next(error);
@@ -13,7 +17,10 @@ export const createFeeStructure = async (req, res, next) => {
 
 export const addFeeComponent = async (req, res, next) => {
   try {
-    const data = await feeService.addFeeComponent(req.body);
+    const data = await feeService.addFeeComponent(
+      req.body,
+      req.userId
+    );
     res.status(201).json(data);
   } catch (error) {
     next(error);
@@ -28,7 +35,8 @@ export const generateInstallmentsForStructure = async (
   try {
     const data =
       await feeService.generateInstallmentsForStructure(
-        req.params.structureId
+        req.params.structureId,
+        req.userId
       );
     res.status(200).json(data);
   } catch (error) {

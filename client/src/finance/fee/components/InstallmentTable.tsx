@@ -17,11 +17,11 @@
         {installments?.map((inst) => (
         <div
           key={inst.id}
-          className="flex justify-between items-center border p-4 rounded-xl hover:bg-muted/30 transition"
+          className="flex flex-col gap-4 rounded-xl border p-4 transition hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between"
         >
         {/* LEFT SIDE */}
-        <div className="space-y-1">
-          <p className="font-semibold text-sm md:text-lg">{inst.title}</p>
+        <div className="min-w-0 space-y-1">
+          <p className="break-words font-semibold text-sm md:text-lg">{inst.title}</p>
 
           <p className="text-xs text-muted-foreground">
             Due:{" "}
@@ -42,9 +42,9 @@
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm text-left text-muted-foreground">Total</p>
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
+          <div className="min-w-[88px] text-left sm:text-right">
+            <p className="text-sm text-muted-foreground">Total</p>
             <p className="font-semibold text-sm md:text-md">{formatCurrency(inst.amount)}</p>
           </div>
 

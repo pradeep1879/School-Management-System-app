@@ -38,5 +38,7 @@ export const classByIdParamsSchema = {
 };
 
 export const classListQuerySchema = {
-  query: paginationQuerySchema,
+  query: paginationQuerySchema.extend({
+    session: z.string().optional(),
+  }),
 };

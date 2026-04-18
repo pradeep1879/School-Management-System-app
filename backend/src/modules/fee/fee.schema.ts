@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  integerLike,
   nonNegativeNumberLike,
   paramsWithId,
   positiveNumberLike,
@@ -23,7 +24,31 @@ export const addFeeComponentSchema = {
       name: z.string().trim().min(1),
       amount: positiveNumberLike,
       frequency: z.enum(["MONTHLY", "QUARTERLY", "YEARLY", "ONE_TIME"]),
+      dueDay: integerLike.refine((value) => {
+        const day = Number(value);
+        return day >= 1 && day <= 31;
+      }, "Due day must be between 1 and 31"),
+      dueMonth: integerLike
+        .refine((value) => {
+          const month = Number(value);
+          return month >= 1 && month <= 12;
+        }, "Due month must be between 1 and 12")
+        .optional(),
       isOptional: z.boolean().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (
+        data.frequency !== "MONTHLY" &&
+        (data.dueMonth === undefined ||
+          data.dueMonth === null)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["dueMonth"],
+          message:
+            "Due month is required for quarterly, yearly, and one-time fees",
+        });
+      }
     })
     .passthrough(),
 };

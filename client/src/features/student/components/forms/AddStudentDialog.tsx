@@ -23,6 +23,7 @@ import {
 
 import { useCreateStudent } from "../../hooks/useCreateStudent"
 import { useClassDropdown } from "@/features/class/hooks/useClassDropDown"
+import { formatClassLabel } from "@/features/class/utils/classLabels"
 
 interface Props {
   setOpen: (v: boolean) => void
@@ -30,13 +31,28 @@ interface Props {
 
 const AddStudentDialog = ({ setOpen }: Props) => {
   const [showPassword, setShowPassword] = useState(false)
+  const [selectedSession, setSelectedSession] =
+    useState("ALL")
 
-  const { register, handleSubmit, setValue, reset } = useForm()
+  const { register, handleSubmit, setValue, reset, watch } =
+    useForm()
   const { mutate, isPending } = useCreateStudent()
   const { data, isLoading } = useClassDropdown()
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const sessionOptions: string[] = Array.from(
+    new Set(
+      (data?.classes || []).map(
+        (cls: any) => cls.session
+      )
+    )
+  )
+  const filteredClasses = (data?.classes || []).filter(
+    (cls: any) =>
+      selectedSession === "ALL" ||
+      cls.session === selectedSession
+  )
 
   const onSubmit = (data: any) => {
     if (!imageFile) {
@@ -170,9 +186,40 @@ const AddStudentDialog = ({ setOpen }: Props) => {
           <div className="grid gap-4 md:grid-cols-2">
 
             <Field>
-              <FieldLabel>Class</FieldLabel>
+              <FieldLabel>Session Filter</FieldLabel>
+              <Select
+                value={selectedSession}
+                onValueChange={(value) => {
+                  setSelectedSession(value)
+                  setValue("classId", "")
+                }}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by session" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="ALL">
+                    All Sessions
+                  </SelectItem>
+                  {sessionOptions.map((session) => (
+                    <SelectItem
+                      key={session}
+                      value={session}
+                    >
+                      {session}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel>Class / Session</FieldLabel>
 
               <Select
+                value={watch("classId")}
                 onValueChange={(v) => setValue("classId", v)}
                 disabled={isLoading}
               >
@@ -181,9 +228,9 @@ const AddStudentDialog = ({ setOpen }: Props) => {
                 </SelectTrigger>
 
                 <SelectContent>
-                  {data?.classes?.map((cls: any) => (
+                  {filteredClasses.map((cls: any) => (
                     <SelectItem key={cls.id} value={cls.id}>
-                      Class {cls.slug} - Section {cls.section}
+                      {formatClassLabel(cls)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -7,12 +7,36 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useClasses } from "@/features/class/hooks/useClasses";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useClassDropdown } from "@/features/class/hooks/useClassDropDown";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Classes = () => {
   const [open, setOpen] = useState(false);
+  const [selectedSession, setSelectedSession] =
+    useState("ALL");
   const navigate = useNavigate();
+  const { data: dropdownData } = useClassDropdown();
+  const sessions: string[] = Array.from(
+    new Set(
+      (dropdownData?.classes || []).map(
+        (cls: any) => cls.session
+      )
+    )
+  );
 
-  const { data, isLoading, isError } = useClasses(1, 10);
+  const { data, isLoading, isError } = useClasses(
+    1,
+    10,
+    selectedSession === "ALL"
+      ? undefined
+      : selectedSession
+  );
 
   return (
     <div>
@@ -36,6 +60,30 @@ const Classes = () => {
           </DialogTrigger>
           <AddClass setOpen={setOpen} />
         </Dialog>
+      </div>
+
+      <div className="mt-6 max-w-xs">
+        <Select
+          value={selectedSession}
+          onValueChange={setSelectedSession}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Filter by session" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">
+              All Sessions
+            </SelectItem>
+            {sessions.map((session) => (
+              <SelectItem
+                key={session}
+                value={session}
+              >
+                {session}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Content */}
@@ -66,8 +114,9 @@ const Classes = () => {
             classId={cls.id}
             className={`Class ${cls.slug}`}
             section={cls.section}
+            session={cls.session}
             classTeacher={cls.teacher?.teacherName || "Not Assigned"}
-            students={cls._count?.student || 0}
+            students={cls._count?.students || 0}
             onView={() =>
               navigate(`/admin/class-detail/${cls.id}`)
             }

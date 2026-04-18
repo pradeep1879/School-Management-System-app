@@ -21,6 +21,7 @@ interface ClassCardProps {
   className: string
   classId: string,
   section: string
+  session: string
   classTeacher: string
   students?: number
   onUpdate?: () => void
@@ -32,6 +33,7 @@ const ClassCard = ({
   className,
   classId,
   section,
+  session,
   classTeacher,
   students,
   onView,
@@ -67,6 +69,10 @@ const ClassCard = ({
 
               <p className="text-sm text-muted-foreground">
                 Section {section}
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Session {session}
               </p>
 
               {/* Class Teacher */}

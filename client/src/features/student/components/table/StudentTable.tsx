@@ -31,7 +31,6 @@ export default function StudentsTable({
   profileBasePath,
 }: StudentsTableProps) {
   const navigate = useNavigate();
-  console.log("profileBasePath",   profileBasePath)
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -50,7 +49,7 @@ export default function StudentsTable({
   return (
     <div className="space-y-6">
       {/* ================= HEADER ================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Students</h2>
           <p className="text-sm text-muted-foreground">
@@ -58,7 +57,7 @@ export default function StudentsTable({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -72,7 +71,7 @@ export default function StudentsTable({
             />
           </div>
 
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="shrink-0 self-start sm:self-auto">
             <Filter size={16} />
           </Button>
         </div>
@@ -88,8 +87,8 @@ export default function StudentsTable({
       {/* ================= TABLE ================= */}
       {!isLoading && (
         <>
-          <div className="rounded-xl border custom-scrollbar border-border/50 overflow-x-auto">
-            <table className="w-full min-w-225 text-sm">
+          <div className="custom-scrollbar w-full max-w-full overflow-x-auto rounded-xl border border-border/50">
+            <table className="w-full min-w-[760px] text-sm lg:min-w-[900px]">
               <thead className="bg-muted/40 border-b border-border/50">
                 <tr className="text-left">
                   <th className="p-4">
@@ -97,9 +96,9 @@ export default function StudentsTable({
                   </th>
                   <th className="p-4">Roll</th>
                   <th className="p-4">Student</th>
-                  <th className="p-4">Phone</th>
+                  <th className="hidden p-4 lg:table-cell">Phone</th>
                   <th className="p-4">Gender</th>
-                  <th className="p-4">Joined</th>
+                  <th className="hidden p-4 xl:table-cell">Joined</th>
                   <th className="p-4"></th>
                 </tr>
               </thead>
@@ -124,7 +123,7 @@ export default function StudentsTable({
                     </td>
 
                     <td className="p-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <Avatar className="h-9 w-9">
                           <AvatarImage src={student.imageUrl} />
                           <AvatarFallback>
@@ -134,13 +133,13 @@ export default function StudentsTable({
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <p className="font-medium">
+                        <p className="truncate font-medium">
                           {student.studentName}
                         </p>
                       </div>
                     </td>
 
-                    <td className="p-4 text-muted-foreground">
+                    <td className="hidden p-4 text-muted-foreground lg:table-cell">
                       {student.contactNo}
                     </td>
 
@@ -150,7 +149,7 @@ export default function StudentsTable({
                       </Badge>
                     </td>
 
-                    <td className="p-4 text-muted-foreground">
+                    <td className="hidden p-4 text-muted-foreground xl:table-cell">
                       {new Date(
                         student.createdAt
                       ).toLocaleDateString("en-GB")}
@@ -180,7 +179,7 @@ export default function StudentsTable({
 
           {/* ================= PAGINATION ================= */}
           {data?.totalPages > 1 && (
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 variant="outline"
                 disabled={page === 1}
@@ -189,7 +188,7 @@ export default function StudentsTable({
                 Previous
               </Button>
 
-              <p className="text-sm text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground">
                 Page {data?.page} of {data?.totalPages}
               </p>
 

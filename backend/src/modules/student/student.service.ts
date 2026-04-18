@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import fs from "fs";
 import config from "../../../config.ts";
+import { normalizeAcademicSession } from "../../utils/session.ts";
 
 export const createStudent = async (body, files, adminId) => {
   const {
@@ -337,15 +338,20 @@ export const getAllStudents = async (query, adminId) => {
   const limit = parseInt(query.limit) || 10;
   const search = query.search || "";
   const classId = query.classId || null;
+  const session = query.session
+    ? normalizeAcademicSession(query.session)
+    : null;
 
   const skip = (page - 1) * limit;
 
 
   const whereCondition = {
-    class:{
-      classId
-    },
     ...(classId && { classId }),
+    ...(session && {
+      class: {
+        session,
+      },
+    }),
     ...(search && {
       OR: [
         { studentName: { contains: search, mode: "insensitive" } },
@@ -373,6 +379,7 @@ export const getAllStudents = async (query, adminId) => {
             id: true,
             slug: true,
             section: true,
+            session: true,
           },
         },
       },

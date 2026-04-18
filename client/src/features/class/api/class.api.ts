@@ -2,8 +2,8 @@ import api from "@/api/axios";
 
 export const createClass = async (data: {
   slug: string;
-  section?: string;
-  session?: string;
+  section: string;
+  session: string;
 }) => {
   const res = await api.post("/classes", data);
   return res.data;
@@ -26,6 +26,7 @@ export const deleteClass = async (classId: string) => {
 export const getAllClasses = (params?: {
   page?: number;
   limit?: number;
+  session?: string;
 }) => {
   return api.get("/classes", { params });
 };

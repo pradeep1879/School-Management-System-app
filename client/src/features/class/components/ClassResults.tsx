@@ -68,7 +68,7 @@ export default function ClassResultsSection() {
         <select
           value={selectedExam}
           onChange={(e) => setSelectedExam(e.target.value)}
-          className="border border-border rounded-md px-3 py-2 bg-background text-sm"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm sm:w-auto"
         >
           {exams.map((exam) => (
             <option key={exam}>{exam}</option>

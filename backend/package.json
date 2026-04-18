@@ -4,10 +4,11 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "start": "bun run index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "dev": "bun --watch index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "postinstall": "bunx prisma generate --schema=./src/prisma/schema.prisma",
+    "postinstall": "bunx prisma generate --schema=./src/prisma/schema.prisma && bunx prisma migrate deploy --schema=./src/prisma/schema.prisma",
     "prisma:generate": "bunx prisma generate --schema=./src/prisma/schema.prisma",
     "prisma:migrate": "bunx prisma migrate deploy --schema=./src/prisma/schema.prisma",
     "prisma:studio": "bunx prisma studio --schema=./src/prisma/schema.prisma"

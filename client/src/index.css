@@ -179,29 +179,17 @@
   * {
     @apply border-border outline-ring/50;
   }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.35) hsl(var(--background));
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
-  *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  *::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-    border-radius: 9999px;
-  }
-  *::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted) / 0.9);
-    border-radius: 9999px;
-    border: 2px solid hsl(var(--background));
-    background-clip: padding-box;
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.45);
+  html,
+  body,
+  #root {
+    min-height: 100%;
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
-
 }

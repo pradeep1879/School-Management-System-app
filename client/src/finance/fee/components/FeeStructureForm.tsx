@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClassDropdown } from "@/features/class/hooks/useClassDropDown";
+import { formatClassLabel } from "@/features/class/utils/classLabels";
 import { useCreateFeeStructure } from "../hooks/useCreateFeeStructure";
 
 interface Props {
@@ -22,14 +23,16 @@ const FeeStructureForm = ({ onCreated }: Props) => {
   const { mutate, isPending } = useCreateFeeStructure();
 
   const [classId, setClassId] = useState("");
-  const [session, setSession] = useState("");
   const [lateFeeType, setLateFeeType] =
     useState<"NONE" | "FIXED" | "DAILY">("NONE");
   const [lateFeeAmount, setLateFeeAmount] = useState(0);
+  const selectedClass = data?.classes?.find(
+    (cls: any) => cls.id === classId
+  );
+  const session = selectedClass?.session || "";
 
   const isFormValid =
     classId !== "" &&
-    session.trim() !== "" &&
     (lateFeeType === "NONE" || lateFeeAmount > 0);
 
   const handleSubmit = () => {
@@ -54,9 +57,9 @@ const FeeStructureForm = ({ onCreated }: Props) => {
   return (
     <Card className="shadow-sm border">
       <CardHeader>
-        <CardTitle>Create Fee Structure</CardTitle>
+        <CardTitle>Create Or Open Fee Structure</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Configure fee structure for a specific class and session.
+          Session is taken directly from the selected class, so fee setup always stays aligned with the academic year.
         </p>
       </CardHeader>
 
@@ -75,7 +78,7 @@ const FeeStructureForm = ({ onCreated }: Props) => {
             <SelectContent>
               {data?.classes?.map((cls: any) => (
                 <SelectItem key={cls.id} value={cls.id}>
-                  {cls.slug} - {cls.section}
+                  {formatClassLabel(cls)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -84,9 +87,10 @@ const FeeStructureForm = ({ onCreated }: Props) => {
 
         {/* Session */}
         <Input
-          placeholder="Session (e.g. 2025-26)"
+          placeholder="Academic Session"
           value={session}
-          onChange={(e) => setSession(e.target.value)}
+          readOnly
+          disabled
         />
 
         {/* Late Fee Type */}
@@ -112,6 +116,11 @@ const FeeStructureForm = ({ onCreated }: Props) => {
           type="number"
           placeholder="Late Fee Amount"
           value={lateFeeAmount}
+          min={0}
+          step={1}
+          onWheel={(e) =>
+            (e.currentTarget as HTMLInputElement).blur()
+          }
           onChange={(e) =>
             setLateFeeAmount(Number(e.target.value))
           }
@@ -129,7 +138,7 @@ const FeeStructureForm = ({ onCreated }: Props) => {
           disabled={!isFormValid || isPending}
           className="w-full h-11"
         >
-          {isPending ? "Creating..." : "Create Structure"}
+          {isPending ? "Opening..." : "Open Structure"}
         </Button>
 
       </CardContent>

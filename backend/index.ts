@@ -50,7 +50,7 @@ app.use(
   })
 );
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 

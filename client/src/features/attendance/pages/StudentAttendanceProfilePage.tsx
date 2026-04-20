@@ -63,50 +63,50 @@ export default function StudentAttendanceProfilePage() {
       <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">
         <Card className="rounded-3xl border bg-card/80">
           <CardContent className="p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Attendance Rate</p>
-            <p className="mt-3 text-3xl font-semibold">{summary.attendancePercentage}%</p>
+            <p className="text-xs uppercase tracking-widest md:tracking-[0.2em] text-muted-foreground">Attendance Rate</p>
+            <p className="mt-3 text-xl md:text-3xl font-semibold">{summary.attendancePercentage}%</p>
             <Progress value={Number(summary.attendancePercentage)} className="mt-4 h-2" />
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-300">
               <CalendarCheck2 className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Present Days</p>
-              <p className="mt-2 text-3xl font-semibold">{summary.present}</p>
+              <p className="text-xs uppercase tracking-widest md:tracking-[0.2em] text-muted-foreground">Present Days</p>
+              <p className="mt-2 text-xl md:text-3xl font-semibold">{summary.present}</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-300">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Current Streak</p>
-              <p className="mt-2 text-3xl font-semibold">{streak} days</p>
+              <p className="text-xs uppercase tracking-wisdest md:tracking-[0.2em] text-muted-foreground">Current Streak</p>
+              <p className="mt-2 text-xl md:text-xl  font-semibold">{streak} days</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-rose-500/10 p-3 text-rose-300">
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Attention Days</p>
-              <p className="mt-2 text-3xl font-semibold">{summary.absent + summary.leave + summary.late}</p>
+              <p className="text-xs uppercase tracking-widest md:tracking-[0.2em] text-muted-foreground">Attention Days</p>
+              <p className="mt-2 text-xl md:text-3xl font-semibold">{summary.absent + summary.leave + summary.late}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
         <Card className="rounded-3xl border bg-card/80">
           <CardHeader>
             <CardTitle>Attendance Trend</CardTitle>

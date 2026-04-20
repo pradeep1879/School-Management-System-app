@@ -138,7 +138,7 @@ export default function TeacherAttendanceStatsPageFT() {
               </div>
             </div>
 
-            <div className="grid min-w-[220px] gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="grid min-w-55 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <div className="rounded-2xl border border-border/50 bg-background/50 px-4 py-3">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Attendance Rate</p>
                 <p className="mt-2 text-2xl font-semibold">{summary.attendancePercentage}%</p>
@@ -152,58 +152,61 @@ export default function TeacherAttendanceStatsPageFT() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">
         <Card className="rounded-3xl border bg-card/80">
           <CardContent className="p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total Records</p>
+            <p className="text-xs uppercase tracking-wise
+             text-muted-foreground">Total Records</p>
             <p className="mt-3 text-3xl font-semibold">{summary.totalDays}</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-300">
               <CalendarClock className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Present</p>
+              <p className="text-xs uppercase tracking-wise
+               text-muted-foreground">Present</p>
               <p className="mt-2 text-3xl font-semibold">{summary.present}</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-300">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Half Days</p>
+              <p className="text-xs uppercase tracking-wise
+               text-muted-foreground">Half Days</p>
               <p className="mt-2 text-3xl font-semibold">{summary.halfDay}</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-3xl border bg-card/80">
-          <CardContent className="flex items-center gap-4 p-5">
+          <CardContent className="flex items-center gap-2 md:gap-4 p-5">
             <div className="rounded-2xl bg-rose-500/10 p-3 text-rose-300">
               <Activity className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Exceptions</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Exceptions</p>
               <p className="mt-2 text-3xl font-semibold">{summary.absent + summary.leave + summary.halfDay}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
         <Card className="rounded-3xl border bg-card/80">
           <CardHeader>
             <CardTitle>Attendance Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[280px] w-full">
+            <ChartContainer config={chartConfig} className="h-70 w-full">
               <AreaChart data={trendData} margin={{ left: 12, right: 12, top: 8 }}>
                 <defs>
                   <linearGradient id="teacher-attendance-fill" x1="0" y1="0" x2="0" y2="1">
@@ -231,7 +234,7 @@ export default function TeacherAttendanceStatsPageFT() {
             <CardTitle>Status Distribution</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="h-[240px] w-full">
+            <div className="h-60 w-full">
               <ChartContainer config={{}} className="h-full w-full">
                 <PieChart>
                   <Pie

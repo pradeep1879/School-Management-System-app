@@ -1,165 +1,103 @@
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  type TooltipProps,
 } from "recharts";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardAnalytics } from "../../hooks/useAdminDashboard";
-import useIsMobile from "@/screen.detector";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: TooltipProps<number, string>) => {
-  if (!active || !payload || payload.length === 0) return null;
+const chartConfig = {
+  students: { label: "Students", color: "#7c3aed" },
+  teachers: { label: "Teachers", color: "#10b981" },
+} satisfies ChartConfig;
 
-  const students = payload.find((p) => p.dataKey === "students")?.value;
-  const teachers = payload.find((p) => p.dataKey === "teachers")?.value;
-
-  return (
-    <div className="bg-white dark:bg-zinc-900 border rounded-lg shadow-md px-3 py-2 text-xs">
-      <p className="font-semibold mb-1">{label}</p>
-
-      <div className="space-y-1">
-        <p className="flex items-center gap-2 text-indigo-500">
-          <span className="h-2 w-2 rounded-full bg-indigo-500" />
-          Students: {students}
-        </p>
-
-        <p className="flex items-center gap-2 text-green-500">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          Teachers: {teachers}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-/* ---------- MAIN COMPONENT ---------- */
+const getBarColors = (size: number, base: string, soft: string) =>
+  Array.from({ length: size }, (_, index) => (index === size - 1 ? base : soft));
 
 const DailyAttendanceChart = () => {
   const { data, isLoading } = useDashboardAnalytics();
 
-  const isMobile = useIsMobile();
-
-  const barSize = isMobile ? 12 : 32;
-  const fontSize = isMobile ? 10 : 16;
-
   if (isLoading) {
     return (
-      <Card>
+      <Card className="py-0">
         <CardHeader>
-          <CardTitle>Daily Attendance Overview</CardTitle>
+          <CardTitle>Attendance Trend</CardTitle>
+          <CardDescription>Weekly live movement across students and teachers</CardDescription>
         </CardHeader>
-
-        <CardContent>
-          <Skeleton className="h-80 w-full rounded-lg" />
+        <CardContent className="pb-6">
+          <Skeleton className="h-80 w-full rounded-2xl" />
         </CardContent>
       </Card>
     );
   }
 
   const chartData =
-    data?.charts?.weeklyAttendance?.map((d) => ({
-      date: new Date(d.date).toLocaleDateString("en-IN", {
+    data?.charts?.weeklyAttendance?.map((item) => ({
+      day: new Date(item.date).toLocaleDateString("en-IN", {
         weekday: "short",
+        day: "numeric",
         timeZone: "Asia/Kolkata",
       }),
-      students: d.studentsPresent,
-      teachers: d.teachersPresent,
-    })) || [];
+      students: item.studentsPresent,
+      teachers: item.teachersPresent,
+    })) ?? [];
+
+  const studentColors = getBarColors(chartData.length, "#8b5cf6", "#5b4be033");
+  const teacherColors = getBarColors(chartData.length, "#10b981", "#10b98133");
 
   return (
-    <Card className="shadow-sm border-muted/40">
-      <CardHeader>
-        <CardTitle className="text-base font-semibold">
-          Daily Attendance Overview
-        </CardTitle>
+    <Card className="">
+      <CardHeader className="gap-3 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle className="text-lg">Attendance Trend</CardTitle>
+          <CardDescription>
+            Student and teacher presence across the latest weekly reporting window.
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="rounded-full border border-violet-400/20 bg-violet-400/10 px-2.5 py-1 text-violet-200">
+            Students
+          </div>
+          <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-200">
+            Teachers
+          </div>
+        </div>
       </CardHeader>
 
-      <CardContent className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            barSize={barSize}
-            margin={{
-              top: 10,
-              right: isMobile ? 1 : 20,
-              left: isMobile ? -45 : 0,
-              bottom: 0,
-            }}
-            data={chartData}
-            barGap={4}
-          >
-            {/* Gradient Colors */}
-            <defs>
-              <linearGradient id="studentBar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity={0.5} />
-              </linearGradient>
-
-              <linearGradient id="teacherBar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity={0.5} />
-              </linearGradient>
-            </defs>
-
-            {/* Axes */}
+      <CardContent className="pb-6">
+        <ChartContainer config={chartConfig} className="h-[280px] w-full sm:h-[340px]">
+          <BarChart data={chartData} barGap={10} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" className="opacity-30" />
             <XAxis
-              interval={0} // force show all labels
-              angle={-35} // rotate labels to prevent overlap
-              textAnchor="end"
-              height={40}
-              dataKey="date"
+              dataKey="day"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: fontSize }}
+              tickMargin={10}
+              interval={0}
+              minTickGap={20}
+              tick={{ fontSize: 12 }}
             />
-
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: fontSize }}
-              domain={[0, "dataMax + 5"]}
-            />
-
-            {/* Tooltip */}
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: "rgba(0,0,0,0.05)" }}
-            />
-
-            {/* Legend */}
-            <Legend wrapperStyle={{ fontSize: "12px" }} />
-
-            {/* Bars */}
-            <Bar
-              dataKey="students"
-              fill="url(#studentBar)"
-              radius={[6, 6, 0, 0]}
-              name="Students"
-              barSize={barSize}
-              animationDuration={600}
-            />
-
-            <Bar
-              dataKey="teachers"
-              fill="url(#teacherBar)"
-              radius={[6, 6, 0, 0]}
-              name="Teachers"
-              barSize={barSize}
-              animationDuration={600}
-            />
+            <YAxis axisLine={false} tickLine={false} tickMargin={10} tick={{ fontSize: 12 }} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Legend />
+            <Bar dataKey="students" radius={[10, 10, 0, 0]} maxBarSize={26}>
+              {chartData.map((_, index) => (
+                <Cell key={`student-${index}`} fill={studentColors[index]} />
+              ))}
+            </Bar>
+            <Bar dataKey="teachers" radius={[10, 10, 0, 0]} maxBarSize={26}>
+              {chartData.map((_, index) => (
+                <Cell key={`teacher-${index}`} fill={teacherColors[index]} />
+              ))}
+            </Bar>
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   );

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { AppShellNavbar } from "@/components/layout/AppShellNavbar";
 import { buildCommandItems } from "@/components/layout/shell.utils";
 import {
+  getTeacherCommandExtras,
   getTeacherShellSections,
-  teacherCommandExtras,
   teacherShellTitles,
 } from "@/features/teacher/teacherShell.config";
 import { useAuthStore } from "@/store/auth.store";
@@ -42,7 +42,7 @@ const TeacherNavbar = () => {
     <AppShellNavbar
       sections={sections}
       extraTitles={teacherShellTitles}
-      commandItems={buildCommandItems(sections, teacherCommandExtras)}
+      commandItems={buildCommandItems(sections, getTeacherCommandExtras(classId))}
       user={{
         name: teacher?.teacherName,
         email: teacher?.email,

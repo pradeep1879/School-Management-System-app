@@ -31,6 +31,11 @@ export interface DashboardAnalytics {
     teachers: TeacherAttendanceStats
   }
 
+  attendanceStatus: {
+    classesMarked: number
+    pendingClasses: number
+  }
+
   charts: {
     weeklyAttendance: WeeklyAttendance[]
   }

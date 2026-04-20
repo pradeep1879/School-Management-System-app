@@ -70,6 +70,7 @@ import AIQuizDashboardPage from '@/features/student/ai-quiz/pages/AIQuizDashboar
 import AIQuizAttemptPage from '@/features/student/ai-quiz/pages/AIQuizAttemptPage';
 import AIQuizResultPage from '@/features/student/ai-quiz/pages/AIQuizResultPage';
 import StudentAttendanceProfilePage from '@/features/attendance/pages/StudentAttendanceProfilePage';
+import TeacherClassAccessGuard from '@/features/teacher/components/TeacherClassAccessGuard';
 
 
 
@@ -134,26 +135,26 @@ const AppRoutes = () =>{
         <Route path="dashboard" element={<TeacherDashboard />} />
 
         {/* ================= CLASS CORE ================= */}
-        <Route path="class-detail/:classId" element={<ClassDetail />} />
-        <Route path="class/students" element={<TeacherStudentsPage />} />
-        <Route path="class/subjects" element={<TeacherSubjectsPage />} />
-        <Route path="class/activities" element={<TeacherActivityPage />} />
-        <Route path="attendance" element={<TeacherAttendancePage />}/>
+        <Route path="class-detail/:classId" element={<TeacherClassAccessGuard><ClassDetail /></TeacherClassAccessGuard>} />
+        <Route path="class/students" element={<TeacherClassAccessGuard><TeacherStudentsPage /></TeacherClassAccessGuard>} />
+        <Route path="class/subjects" element={<TeacherClassAccessGuard><TeacherSubjectsPage /></TeacherClassAccessGuard>} />
+        <Route path="class/activities" element={<TeacherClassAccessGuard><TeacherActivityPage /></TeacherClassAccessGuard>} />
+        <Route path="attendance" element={<TeacherClassAccessGuard><TeacherAttendancePage /></TeacherClassAccessGuard>}/>
         <Route path="my-attendance" element={<TeacherAttendanceStatsPageFT />}/>
 
         {/* Optional if you keep class-level results */}
-        <Route path="class/results" element={<ClassResultsSection />} />
+        <Route path="class/results" element={<TeacherClassAccessGuard><ClassResultsSection /></TeacherClassAccessGuard>} />
 
-        <Route path="class/exams" element={<ExamPage />} />
-        <Route path="exam/:examId" element={<ExamDetailPage />} />
-        <Route path="exam/:examId/marks" element={<ExamMarksPage />} />
-        <Route path="class/homework" element={<HomeworkPage />} />
+        <Route path="class/exams" element={<TeacherClassAccessGuard><ExamPage /></TeacherClassAccessGuard>} />
+        <Route path="exam/:examId" element={<TeacherClassAccessGuard><ExamDetailPage /></TeacherClassAccessGuard>} />
+        <Route path="exam/:examId/marks" element={<TeacherClassAccessGuard><ExamMarksPage /></TeacherClassAccessGuard>} />
+        <Route path="class/homework" element={<TeacherClassAccessGuard><HomeworkPage /></TeacherClassAccessGuard>} />
         <Route path="announcements" element={<AnnouncementsPage />} />
-        <Route path="exam/:examId/result/:studentId" element={<StudentResultPage />} />
-        <Route path="student-profile/:studentId" element={<StudentProfilePageAdminTeacher />} />
-        <Route path="attendance/student/:studentId" element={<StudentAttendanceProfilePage />} />
-        <Route path="exam/:examId/results" element={<TeacherStudentResultsPage />} />
-        <Route path="subjects/:subjectId/syllabus"  element={<SyllabusPage />}/>
+        <Route path="exam/:examId/result/:studentId" element={<TeacherClassAccessGuard><StudentResultPage /></TeacherClassAccessGuard>} />
+        <Route path="student-profile/:studentId" element={<TeacherClassAccessGuard><StudentProfilePageAdminTeacher /></TeacherClassAccessGuard>} />
+        <Route path="attendance/student/:studentId" element={<TeacherClassAccessGuard><StudentAttendanceProfilePage /></TeacherClassAccessGuard>} />
+        <Route path="exam/:examId/results" element={<TeacherClassAccessGuard><TeacherStudentResultsPage /></TeacherClassAccessGuard>} />
+        <Route path="subjects/:subjectId/syllabus"  element={<TeacherClassAccessGuard><SyllabusPage /></TeacherClassAccessGuard>}/>
 
         <Route path="teacher/attendance" element={<TeacherAttendanceStatsPageFT />}/>
         <Route path="teacher/attendance/:teacherId" element={<TeacherAttendanceStatsPageFT />}/>

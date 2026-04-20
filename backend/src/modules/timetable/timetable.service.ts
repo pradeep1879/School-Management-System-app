@@ -445,27 +445,19 @@ export const getMyTimetable = async (
   userId: string,
 ) => {
   if (role === "teacher") {
-    const classRecord = await getTeacherPrimaryClass(userId);
-
-    if (!classRecord) {
-      return {
-        success: true,
-        class: null,
-        slots: [],
-      };
-    }
-
     const slots = await client.timetable.findMany({
       where: {
-        classId: classRecord.id,
+        teacherId: userId,
       },
       select: timetableSelect,
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     });
 
+    const classRecord = await getTeacherPrimaryClass(userId);
+
     return {
       success: true,
-      class: classRecord,
+      class: classRecord ?? null,
       slots,
     };
   }

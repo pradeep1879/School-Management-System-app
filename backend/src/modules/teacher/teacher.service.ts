@@ -220,11 +220,7 @@ export const getTeacherClass = async (teacherId) => {
 
   const teacherClass = await client.class.findFirst({
     where: {
-      OR: [
-        { teacherId },
-        { subjects: { some: { teacherId } } },
-        { timetableSlots: { some: { teacherId } } },
-      ],
+      teacherId,
     },
     select: {
       id: true,
@@ -260,7 +256,10 @@ export const getTeacherClass = async (teacherId) => {
   });
 
   if (!teacherClass) {
-    throw new Error("No class assigned to this teacher");
+    return {
+      message: "No class assigned to this teacher",
+      classDetail: null,
+    };
   }
 
   return {

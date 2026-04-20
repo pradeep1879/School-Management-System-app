@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import type { WebSocketEnvelope } from "@/features/announcements/types/announcement.types";
+import { getSocketBaseUrl } from "@/api/base-url";
 
 type WebSocketHandlers = Record<string, (payload: unknown) => void>;
 
 const getWebSocketUrl = (token: string) => {
-  const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api/v1";
-  const baseUrl = String(apiUrl).replace(/\/api\/v1\/?$/, "").replace(/\/api\/?$/, "");
-  const wsUrl = baseUrl.replace(/^http/, "ws");
+  const wsUrl = getSocketBaseUrl().replace(/^http/, "ws");
 
   return `${wsUrl}?token=${encodeURIComponent(token)}`;
 };

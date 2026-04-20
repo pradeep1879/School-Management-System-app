@@ -44,8 +44,8 @@ export default function TeacherAttendanceHistoryStatsTable() {
   const records = data || [];
 
   return (
-    <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
-      <div className="min-w-[720px]">
+    <div className="custom-div-scroll w-full max-w-full overflow-x-auto">
+      <div className="min-w-180 ">
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,10 +1,6 @@
-import StudentAttendanceCard from "@/features/attendance/components/StudentAttendanceCard";
+import StudentAttendanceProfilePage from "@/features/attendance/pages/StudentAttendanceProfilePage";
 
 
 export default function StudentAttendancePage() {
-  return (
-    <div className="p-6">
-      <StudentAttendanceCard />
-    </div>
-  );
+  return <StudentAttendanceProfilePage />;
 }

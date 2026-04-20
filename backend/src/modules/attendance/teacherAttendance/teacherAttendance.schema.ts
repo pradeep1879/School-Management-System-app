@@ -26,3 +26,7 @@ export const rejectAttendanceSchema = {
 export const teacherAttendanceHistoryParamsSchema = {
   params: paramsWithId("teacherId"),
 };
+
+export const teacherAttendanceProfileParamsSchema = {
+  params: paramsWithId("teacherId"),
+};

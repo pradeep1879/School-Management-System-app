@@ -60,7 +60,7 @@ const StudentListCard = ({
                   : "hover:bg-muted/40"
               }`}
             >
-              <p className="min-w-0 break-words font-medium">
+              <p className="min-w-0 wrap-break-word font-medium">
                 {student.studentName}({student?.rollNumber})
               </p>
 

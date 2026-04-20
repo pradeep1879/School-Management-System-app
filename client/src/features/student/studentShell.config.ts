@@ -29,7 +29,6 @@ export const studentShellBrand: ShellBrand = {
 };
 
 export const getStudentShellSections = (
-  notificationCount = 0,
 ): ShellNavSection[] => [
   {
     label: "Application",
@@ -44,12 +43,7 @@ export const getStudentShellSections = (
       { title: "Announcements", url: "/student/announcements", icon: Megaphone },
       { title: "Time Table", url: "/student/time-table", icon: CalendarDays },
       { title: "Calendar", url: "/student/calendar", icon: Calendar1Icon },
-      {
-        title: "Notifications",
-        url: "/student/notification",
-        icon: Calendar1Icon,
-        badge: notificationCount,
-      },
+      
       { title: "Fee", url: "/student/fee", icon: ReceiptIndianRupee },
     ],
   },

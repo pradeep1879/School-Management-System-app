@@ -40,6 +40,7 @@ export const getTeacherShellSections = (classId?: string): ShellNavSection[] => 
       },
       { title: "Students", url: "/teacher/class/students", icon: User },
       { title: "Attendance", url: "/teacher/attendance", icon: CalendarCheck },
+      { title: "My Attendance", url: "/teacher/my-attendance", icon: CalendarCheck },
       { title: "Subjects", url: "/teacher/class/subjects", icon: BookOpen },
       { title: "Activities", url: "/teacher/class/activities", icon: ClipboardList },
       { title: "Exams", url: "/teacher/class/exams", icon: GraduationCap },
@@ -57,6 +58,8 @@ export const getTeacherShellSections = (classId?: string): ShellNavSection[] => 
 
 export const teacherShellTitles: ShellPageMatcher[] = [
   { prefix: "/teacher/class-detail/", title: "Class Details" },
+  { prefix: "/teacher/attendance/student/", title: "Student Attendance" },
+  { prefix: "/teacher/my-attendance", title: "My Attendance" },
   { prefix: "/teacher/exam/", title: "Exam Workspace" },
   { prefix: "/teacher/student-profile/", title: "Student Profile" },
   { prefix: "/teacher/subjects/", title: "Syllabus" },

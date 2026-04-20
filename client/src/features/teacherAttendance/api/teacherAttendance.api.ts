@@ -67,3 +67,8 @@ export const getTeacherAttendanceStats = async () => {
   const res = await api.get("/teacher/attendance/stats");
   return res.data;
 };
+
+export const getTeacherAttendanceProfile = async (teacherId: string) => {
+  const res = await api.get(`/teacher/attendance/profile/${teacherId}`);
+  return res.data;
+};

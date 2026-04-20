@@ -6,6 +6,7 @@ import ClassInfoCard from "../components/dashboard/ClassInfoCard"
 import { useStudentProfile } from "../hooks/useStudentProfile"
 import StudentPerformanceTrendChart from "../components/analytics/StudentPerformanceTrendChart"
 import StudentSubjectPerformanceChart from "../components/analytics/StudentSubjectPerformanceChart"
+import { TodayScheduleWidget } from "@/features/timetable/components/TodayScheduleWidget"
 
 const StudentDashboard = () => {
 
@@ -30,6 +31,8 @@ const StudentDashboard = () => {
         <StudentPerformanceTrendChart studentId={student?.id} />
         <StudentSubjectPerformanceChart studentId={student?.id} />
       </div>
+
+      <TodayScheduleWidget />
 
     </div>
   )

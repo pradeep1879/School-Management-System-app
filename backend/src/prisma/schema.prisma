@@ -20,6 +20,7 @@ model Admin {
   attendanceSession   AttendanceSession[]
   verifiedAttendance  TeacherAttendance[]
   generatedSalaries   TeacherSalary[] 
+  calendarEvents      CalendarEvent[]
   
 
 
@@ -51,6 +52,7 @@ model Teacher {
   submittedAttendances        TeacherAttendance[] @relation("TeacherAttendanceSubmitted")
   salaryStructures            SalaryStructure[]
   salaries                    TeacherSalary[]
+  timetableSlots              Timetable[]
  
 }
 
@@ -79,6 +81,8 @@ model Class {
   feeStructures     FeeStructure[]
   announcements     Announcement[]
   aiQuizzes         AIQuiz[]
+  timetableSlots    Timetable[]
+  calendarEvents    CalendarEvent[]
 }
 
 
@@ -136,6 +140,7 @@ model Subject {
   examSubjects         ExamSubject[]   //  REQUIRED OPPOSITE RELATION
   homeWorkSubjects     HomeworkSubject[]
   chapters             SyllabusChapter[]
+  timetableSlots       Timetable[]
 }
 
 model SyllabusChapter {
@@ -614,6 +619,46 @@ model AIQuizAnswer {
   @@index([questionId])
 }
 
+model Timetable {
+  id          String   @id @default(cuid())
+  classId      String
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  subjectId    String
+  teacherId    String
+  room         String?
+  createdAt    DateTime @default(now())
+
+  class        Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject      Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher      Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([classId, dayOfWeek])
+  @@index([teacherId, dayOfWeek])
+  @@index([subjectId])
+}
+
+model CalendarEvent {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  type        EventType
+  classId     String?
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  class       Class?     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  admin       Admin      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([classId, startDate])
+  @@index([type, startDate])
+  @@index([createdBy])
+}
+
 enum Role {
   admin
   teacher
@@ -630,6 +675,13 @@ enum AIQuizDifficulty {
   EASY
   MEDIUM
   HARD
+}
+
+enum EventType {
+  HOLIDAY
+  EXAM
+  EVENT
+  NOTICE
 }
 
 

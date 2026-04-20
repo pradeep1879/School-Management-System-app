@@ -14,16 +14,16 @@ import ExamAnalyticsDashboard from "@/features/exam/analytics/ExamAnalyticsDashb
 import { ClassDetailHeaderSkeleton } from "../../skeletons/ClassDetailHeaderSkeleton";
 
 const tabs = [
-  { id: "analytics", label: "Analytics" },
   { id: "students", label: "Students" },
-  { id: "exams", label: "Exams" },
   { id: "attendance", label: "Attendance" },
   { id: "subjects", label: "Subjects" },
+  { id: "exams", label: "Exams" },
+  { id: "analytics", label: "Analytics" },
   { id: "activities", label: "Activities" },
 ];
 
 const ClassDetail = () => {
-  const [activeTab, setActiveTab] = useState("analytics");
+  const [activeTab, setActiveTab] = useState("students");
   const role = useAuthStore((state) => state.role);
   const { classId } = useParams();
   
@@ -84,13 +84,12 @@ const ClassDetail = () => {
 
         {role === "admin" && (
         <div className="mt-8">
-          <div className="flex  gap-8  lg:gap-10 border-b 
-           overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="custom-div-scroll flex gap-6 border-b overflow-x-auto whitespace-nowrap pb-1 lg:gap-10">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 text-md sm:text-sm md:text-md lg:text-lg font-medium relative ${
+                className={`shrink-0 pb-3 text-base font-medium relative sm:text-sm md:text-base lg:text-lg ${
                   activeTab === tab.id
                     ? "text-primary"
                     : "text-muted-foreground"

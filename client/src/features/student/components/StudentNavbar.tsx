@@ -7,7 +7,6 @@ import {
   studentCommandExtras,
   studentShellTitles,
 } from "@/features/student/studentShell.config";
-import { useNotificationContext } from "@/features/notification/context/NotificationContext";
 import { useAuthStore } from "@/store/auth.store";
 import { studentLogout } from "../api/student.api";
 import { useStudentProfile } from "../hooks/useStudentProfile";
@@ -22,10 +21,9 @@ const getInitials = (name?: string) =>
 const StudentNavbar = () => {
   const navigate = useNavigate();
   const logoutStore = useAuthStore((state) => state.logout);
-  const { notification } = useNotificationContext();
   const { data, isLoading } = useStudentProfile();
   const student = data?.student;
-  const sections = getStudentShellSections(notification?.length ?? 0);
+  const sections = getStudentShellSections();
 
   const handleLogout = async () => {
     try {

@@ -61,6 +61,7 @@ export const adminShellTitles: ShellPageMatcher[] = [
   { prefix: "/admin/teacher-profile/", title: "Teacher Profile" },
   { prefix: "/admin/class-detail/", title: "Class Details" },
   { prefix: "/admin/student-profile/", title: "Student Profile" },
+  { prefix: "/admin/attendance/student/", title: "Student Attendance" },
   { prefix: "/admin/exam/", title: "Exam Results" },
   { prefix: "/admin/teacher/attendance/", title: "Teacher Attendance" },
 ];

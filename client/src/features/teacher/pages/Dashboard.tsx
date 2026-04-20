@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useTeacherProfile } from "@/features/teacher/hooks/useTeacherProfile";
 import AttendanceActionCard from "@/features/teacherAttendance/components/AttendanceActionCard";
+import { TodayScheduleWidget } from "@/features/timetable/components/TodayScheduleWidget";
 
 export default function TeacherDashboard() {
 
@@ -63,29 +64,7 @@ export default function TeacherDashboard() {
         {/* ================= RIGHT SIDE ================= */}
         <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
 
-          {/* Today's Classes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Today's Classes</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-3 text-sm">
-              {teacher?.classes?.length ? (
-                teacher.classes.map((cls: any) => (
-                  <div key={cls.id} className="flex justify-between">
-                    <span>--:--</span>
-                    <span>
-                      Class {cls.slug}{cls.section}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground">
-                  No classes assigned
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <TodayScheduleWidget title="Today's Classes" />
 
           {/* Notifications */}
           <Card>

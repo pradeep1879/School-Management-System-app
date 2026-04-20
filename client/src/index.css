@@ -32,12 +32,23 @@
   background-clip: padding-box;
 }
 
-.custom-div-scroll {
+/* .custom-div-scroll {
   @apply overflow-x-auto whitespace-nowrap;
   scrollbar-width: none;
 }
 
 .custom-div-scroll::-webkit-scrollbar {
+  display: none;
+} */
+
+.custom-div-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.custom-div-scroll::-webkit-scrollbar {
+  height: 0;
   display: none;
 }
 

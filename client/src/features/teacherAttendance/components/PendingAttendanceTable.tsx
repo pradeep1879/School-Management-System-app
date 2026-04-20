@@ -143,10 +143,10 @@ export default function PendingAttendanceTable() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-3 md:grid-cols-3">
+    <div className="space-y-3">
+      <div className="grid gap-3 grid-cols-3">
         <Card className="rounded-3xl bg-card/75">
-          <CardContent className="p-5">
+          <CardContent className="p-4 lg:p-5">
             <p className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
               Pending
             </p>
@@ -230,7 +230,9 @@ export default function PendingAttendanceTable() {
             </div>
           </div>
 
-          <Table className="min-w-[920px]">
+          <div className="custom-div-scroll w-full max-w-full overflow-x-auto">
+            <div className="min-w-190">
+              <Table className="">
             <TableHeader>
               <TableRow className="border-border/60">
                 <TableHead className="w-12">
@@ -340,6 +342,8 @@ export default function PendingAttendanceTable() {
               })}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

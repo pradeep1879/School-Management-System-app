@@ -20,12 +20,13 @@ export interface StudentAttendanceResponse {
   history: AttendanceHistory[];
 }
 
-export const useMyAttendance = () => {
+export const useMyAttendance = (enabled = true) => {
   return useQuery<StudentAttendanceResponse>({
     queryKey: ["my-attendance"],
     queryFn: async () => {
       const res = await api.get("/attendance/student/me");
       return res.data;
     },
+    enabled,
   });
 };

@@ -3,11 +3,11 @@ import { useClassAttendanceSummary } from "../hooks/useClassAttendanceSummary";
 import { Input } from "@/components/ui/input";
 
 import { BarChart3, CalendarDays, Search, Users } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import StudentAttendanceCard from "./StudentAttendanceCard";
 import { AttendanceTopStatsCards } from "./AttendanceTopStatsCards";
 import StudentsAttendanceTable from "./table/StudentsAttendanceTable";
 import { ClassAttendanceOverviewSkeleton } from "../skeletons/ClassAttendanceOverviewSkeleton";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/auth.store";
 
 
 interface Props {
@@ -23,11 +23,12 @@ const getAttendanceColor = (percent: number ) => {
 export default function ClassAttendanceOverview({
   classId,
 }: Props) {
+  const navigate = useNavigate();
+  const role = useAuthStore((state) => state.role);
   const { data, isLoading } =
     useClassAttendanceSummary(classId);
 
   const [search, setSearch] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState<string | null>("");
 
   const filteredStudents = useMemo(() => {
     if (!data?.students) return [];
@@ -94,21 +95,8 @@ export default function ClassAttendanceOverview({
       <StudentsAttendanceTable
         students={filteredStudents}
         getAttendanceColor={getAttendanceColor}
-        onRowClick={(id) => setSelectedStudent(id)}
+        onRowClick={(id) => navigate(`/${role}/attendance/student/${id}`)}
       />
-
-    {selectedStudent && (
-      <Dialog
-        open={!!selectedStudent}
-        onOpenChange={() => setSelectedStudent(null)}
-      >
-        <DialogContent className="max-w-3xl">
-          <StudentAttendanceCard
-            studentId={selectedStudent}
-          />
-        </DialogContent>
-      </Dialog>
-  )}
   </div>
 );
 

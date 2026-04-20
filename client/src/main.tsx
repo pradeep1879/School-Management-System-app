@@ -6,7 +6,7 @@ import { ThemeProvider } from './components/theme-provider.tsx'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './app/queryClient.ts'
 import { Toaster } from './components/ui/sonner.tsx'
-import { NotificationProvider } from './features/notification/context/NotificationContext.tsx'
+
 
 
 
@@ -15,9 +15,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
    <QueryClientProvider client={queryClient}>    
     <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
-      <NotificationProvider>
         <App />
-      </NotificationProvider>
         <Toaster/>
     </ThemeProvider>
    </QueryClientProvider> 

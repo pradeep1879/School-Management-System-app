@@ -33,7 +33,7 @@ export default function StudentsAttendanceTable({
   getAttendanceColor,
 }: Props) {
   return (
-    <div className="overflow-x-auto custom-scrollbar rounded-lg border">
+    <div className="overflow-x-auto custom-div-scroll rounded-lg border">
       <Table className="min-w-125 w-full text-xs sm:text-sm">
 
         <TableHeader className="bg-muted">

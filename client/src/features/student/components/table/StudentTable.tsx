@@ -45,6 +45,8 @@ export default function StudentsTable({
   );
 
   const students = data?.students || [];
+  const formatJoinedDate = (value: string) =>
+    new Date(value).toLocaleDateString("en-GB");
 
   return (
     <div className="space-y-6">
@@ -87,9 +89,79 @@ export default function StudentsTable({
       {/* ================= TABLE ================= */}
       {!isLoading && (
         <>
-          <div className="custom-scrollbar w-full max-w-full overflow-x-auto rounded-xl border border-border/50">
-            <table className="w-full min-w-[760px] text-sm lg:min-w-[900px]">
-              <thead className="bg-muted/40 border-b border-border/50">
+          <div className="space-y-3 md:hidden">
+            {students.map((student: any) => (
+              <div
+                key={student.id}
+                onClick={() =>
+                  navigate(`${profileBasePath}/student-profile/${student.id}`)
+                }
+                className="rounded-2xl border border-border/50 bg-card/70 p-4 shadow-sm transition hover:bg-muted/20"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Checkbox
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Select ${student.studentName}`}
+                    />
+                    <Avatar className="h-11 w-11 ring-1 ring-border/60">
+                      <AvatarImage src={student.imageUrl} />
+                      <AvatarFallback>
+                        {student.studentName
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{student.studentName}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span className="rounded-full bg-muted px-2 py-1 font-medium text-foreground/80">
+                          Roll {student.rollNumber}
+                        </span>
+                        <Badge variant="outline" className="capitalize">
+                          {student.gender}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical size={16} />
+                  </Button>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl border border-border/40 bg-background/60 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Phone
+                    </p>
+                    <p className="mt-1 truncate font-medium text-foreground/90">
+                      {student.contactNo || "Not available"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-border/40 bg-background/60 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Joined On
+                    </p>
+                    <p className="mt-1 font-medium text-foreground/90">
+                      {formatJoinedDate(student.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="custom-div-scroll hidden w-full max-w-full overflow-x-auto rounded-xl border border-border/50 md:block">
+            <table className="w-full min-w-190 text-sm lg:min-w-225">
+              <thead className="border-b border-border/50 bg-muted/40">
                 <tr className="text-left">
                   <th className="p-4">
                     <Checkbox />
@@ -112,7 +184,7 @@ export default function StudentsTable({
                         `${profileBasePath}/student-profile/${student.id}`
                       )
                     }
-                    className="border-b cursor-pointer border-border/30 hover:bg-muted/30 transition"
+                    className="cursor-pointer border-b border-border/30 transition hover:bg-muted/30"
                   >
                     <td className="p-4">
                       <Checkbox />
@@ -150,9 +222,7 @@ export default function StudentsTable({
                     </td>
 
                     <td className="hidden p-4 text-muted-foreground xl:table-cell">
-                      {new Date(
-                        student.createdAt
-                      ).toLocaleDateString("en-GB")}
+                      {formatJoinedDate(student.createdAt)}
                     </td>
 
                     <td className="p-4 text-right">

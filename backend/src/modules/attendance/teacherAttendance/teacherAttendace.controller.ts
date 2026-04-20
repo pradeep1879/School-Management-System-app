@@ -110,3 +110,16 @@ export const getTeacherAttendanceHistoryById = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getTeacherAttendanceProfile = async (req, res, next) => {
+  try {
+    const data =
+      await teacherAttendanceService.getTeacherAttendanceProfile(
+        req.params.teacherId
+      );
+
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
+};

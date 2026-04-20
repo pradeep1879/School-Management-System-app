@@ -220,7 +220,11 @@ export const getTeacherClass = async (teacherId) => {
 
   const teacherClass = await client.class.findFirst({
     where: {
-      teacherId,
+      OR: [
+        { teacherId },
+        { subjects: { some: { teacherId } } },
+        { timetableSlots: { some: { teacherId } } },
+      ],
     },
     select: {
       id: true,
@@ -248,6 +252,11 @@ export const getTeacherClass = async (teacherId) => {
         },
       },
     },
+    orderBy: [
+      { session: "desc" },
+      { slug: "asc" },
+      { section: "asc" },
+    ],
   });
 
   if (!teacherClass) {

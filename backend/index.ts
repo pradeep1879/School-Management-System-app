@@ -23,6 +23,8 @@ import analyticsRoutes from "./src/modules/analytics/analytics.routes.ts";
 import examAnalyticsRoutes from "./src/modules/analytics/exam/exm.ana.routes.ts";
 import announcementRoutes from "./src/modules/announcement/announcement.routes.ts";
 import aiQuizRoutes from "./src/modules/aiQuiz/aiQuiz.routes.ts";
+import timetableRoutes from "./src/modules/timetable/timetable.routes.ts";
+import calendarRoutes from "./src/modules/calendar/calendar.routes.ts";
 
 import { globalErrorHandler } from "./src/middlewares/error.middleware.ts";
 
@@ -72,6 +74,8 @@ app.use("/api/v1/analytics", analyticsRoutes);
 app.use("/api/v1/announcements", announcementRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/v1/ai-quiz", aiQuizRoutes);
+app.use("/api/v1/timetable", timetableRoutes);
+app.use("/api/v1/calendar", calendarRoutes);
 
 app.use(globalErrorHandler);
 

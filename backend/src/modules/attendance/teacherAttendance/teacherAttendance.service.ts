@@ -151,6 +151,88 @@ export const getTeacherAttendanceHistoryById = async (teacherId) => {
   });
 };;
 
+const buildTeacherAttendanceSummary = (records) => {
+  const summary = {
+    totalDays: records.length,
+    present: 0,
+    absent: 0,
+    leave: 0,
+    halfDay: 0,
+    holiday: 0,
+    attendancePercentage: "0.00",
+  };
+
+  records.forEach((record) => {
+    switch (record.status) {
+      case "PRESENT":
+        summary.present += 1;
+        break;
+      case "ABSENT":
+        summary.absent += 1;
+        break;
+      case "LEAVE":
+        summary.leave += 1;
+        break;
+      case "HALF_DAY":
+        summary.halfDay += 1;
+        break;
+      case "HOLIDAY":
+        summary.holiday += 1;
+        break;
+    }
+  });
+
+  const effectiveDays =
+    summary.present +
+    summary.absent +
+    summary.leave +
+    summary.halfDay;
+
+  const attendedDays = summary.present + summary.halfDay * 0.5;
+
+  summary.attendancePercentage = effectiveDays
+    ? ((attendedDays / effectiveDays) * 100).toFixed(2)
+    : "0.00";
+
+  return summary;
+};
+
+export const getTeacherAttendanceProfile = async (teacherId) => {
+  const teacher = await client.teacher.findUnique({
+    where: { id: teacherId },
+    select: {
+      id: true,
+      teacherName: true,
+      email: true,
+      contactNo: true,
+      imageUrl: true,
+      experience: true,
+      createdAt: true,
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found");
+  }
+
+  const history = await client.teacherAttendance.findMany({
+    where: {
+      teacherId,
+    },
+    orderBy: {
+      date: "desc",
+    },
+    take: 180,
+  });
+
+  return {
+    success: true,
+    teacher,
+    summary: buildTeacherAttendanceSummary(history),
+    history,
+  };
+};
+
 
 export const getTodayAttendance = async (teacherId) => {
 

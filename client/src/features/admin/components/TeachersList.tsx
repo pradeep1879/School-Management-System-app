@@ -52,8 +52,8 @@ const TeachersTable = ({ limit = 10 }: TeachersTableProps) => {
       {/* Table */}
       {!isLoading && !isError && (
         <>
-          <div className="custom-scrollbar w-full max-w-full overflow-x-auto">
-            <div className="min-w-[760px]">
+          <div className="custom-div-scroll w-full max-w-full overflow-x-auto">
+            <div className="min-w-190">
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>

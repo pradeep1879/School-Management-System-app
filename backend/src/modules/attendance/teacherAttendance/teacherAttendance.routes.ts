@@ -7,6 +7,7 @@ import {
   rejectAttendanceSchema,
   submitTeacherAttendanceSchema,
   teacherAttendanceHistoryParamsSchema,
+  teacherAttendanceProfileParamsSchema,
 } from "./teacherAttendance.schema.ts";
 
 const router = express.Router();
@@ -90,6 +91,13 @@ router.get(
   verifyUser(["admin"]),
   validateRequest(teacherAttendanceHistoryParamsSchema),
   teacherAttendanceController.getTeacherAttendanceHistoryById
+);
+
+router.get(
+  "/profile/:teacherId",
+  verifyUser(["admin"]),
+  validateRequest(teacherAttendanceProfileParamsSchema),
+  teacherAttendanceController.getTeacherAttendanceProfile
 );
 
 export default router;

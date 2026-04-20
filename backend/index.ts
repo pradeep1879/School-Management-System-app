@@ -33,6 +33,7 @@ import { startWebSocket } from "./src/websocket/wsServer.ts";
 
 const app = express();
 const server = http.createServer(app);
+const host = "0.0.0.0";
 
 app.use(cookieParser());
 app.use(express.json());
@@ -54,6 +55,10 @@ app.use(
 
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
+});
+
+app.get("/", (req: Request, res: Response) => {
+  res.json({ status: "ok", service: "school-management-backend" });
 });
 
 app.use("/api/v1/admin", adminRoutes);
@@ -94,6 +99,6 @@ server.on("error", (error: NodeJS.ErrnoException) => {
   throw error;
 });
 
-server.listen(port, () => {
-  console.log(`Backend server running on port ${port}`);
+server.listen(Number(port), host, () => {
+  console.log(`Backend server running on ${host}:${port}`);
 });

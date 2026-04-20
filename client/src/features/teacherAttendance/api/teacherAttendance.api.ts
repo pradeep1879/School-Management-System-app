@@ -1,4 +1,5 @@
 import api from "@/api/axios";
+import { getTeacherById } from "@/features/teacher/api/teacher.api";
 
 /* Teacher Submit Attendance */
 
@@ -69,6 +70,67 @@ export const getTeacherAttendanceStats = async () => {
 };
 
 export const getTeacherAttendanceProfile = async (teacherId: string) => {
-  const res = await api.get(`/teacher/attendance/profile/${teacherId}`);
-  return res.data;
+  try {
+    const res = await api.get(`/teacher/attendance/profile/${teacherId}`);
+    return res.data;
+  } catch (error: any) {
+    if (error?.response?.status !== 404) {
+      throw error;
+    }
+
+    const [teacherResponse, history] = await Promise.all([
+      getTeacherById(teacherId),
+      getTeacherAttendanceHistoryById(teacherId),
+    ]);
+
+    const teacher = teacherResponse?.teacher;
+
+    if (!teacher) {
+      throw error;
+    }
+
+    const summary = {
+      totalDays: history.length,
+      present: 0,
+      absent: 0,
+      leave: 0,
+      halfDay: 0,
+      holiday: 0,
+      attendancePercentage: "0.00",
+    };
+
+    history.forEach((record: any) => {
+      switch (record.status) {
+        case "PRESENT":
+          summary.present += 1;
+          break;
+        case "ABSENT":
+          summary.absent += 1;
+          break;
+        case "LEAVE":
+          summary.leave += 1;
+          break;
+        case "HALF_DAY":
+          summary.halfDay += 1;
+          break;
+        case "HOLIDAY":
+          summary.holiday += 1;
+          break;
+      }
+    });
+
+    const counted = summary.present + summary.absent + summary.leave + summary.halfDay;
+    const attended = summary.present + summary.halfDay * 0.5;
+
+    summary.attendancePercentage = counted
+      ? ((attended / counted) * 100).toFixed(2)
+      : "0.00";
+
+    return {
+      success: true,
+      teacher,
+      summary,
+      history,
+    };
+  }
 };

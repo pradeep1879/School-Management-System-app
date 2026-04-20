@@ -60,7 +60,7 @@ export default function StudentAttendanceProfilePage() {
     <div className="space-y-6">
       <StudentProfileHeader student={student} />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">
         <Card className="rounded-3xl border bg-card/80">
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Attendance Rate</p>
@@ -113,7 +113,7 @@ export default function StudentAttendanceProfilePage() {
           </CardHeader>
           <CardContent>
             {trendData.length ? (
-              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+              <ChartContainer config={chartConfig} className="h-70 w-full">
                 <AreaChart data={trendData} margin={{ left: 12, right: 12, top: 8 }}>
                   <defs>
                     <linearGradient id="student-attendance-fill" x1="0" y1="0" x2="0" y2="1">

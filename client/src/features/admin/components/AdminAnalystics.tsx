@@ -259,7 +259,7 @@ const AdminAnalystics = () => {
                 <Progress
                   value={dueRate}
                   className="mt-3 h-2 bg-secondary/70"
-                  indicatorClassName="bg-gradient-to-r from-amber-400 to-orange-500"
+                  indicatorClassName="bg-gradient-to-r from-amber-350 to-orange-500"
                 />
               </div>
 

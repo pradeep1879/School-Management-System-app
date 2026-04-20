@@ -51,7 +51,7 @@ const ChangeAdminPasswordCard = () => {
               {/* old Password */}
           <div className="relative">
               <Input
-                type={showPassword ? "text" : "password"}
+                type={showOldPassword ? "text" : "password"}
                 placeholder="Old Password"
                 {...register("oldPassword")}
                 required

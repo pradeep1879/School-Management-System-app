@@ -12,4 +12,4 @@ RUN bunx prisma generate --schema=./src/prisma/schema.prisma
 
 EXPOSE 3000
 
-CMD ["bun", "run", "start"]
+CMD ["bun", "index.ts"]

@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "bun index.ts",
     "dev": "bun --watch index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "postinstall": "bunx prisma generate --schema=./src/prisma/schema.prisma && bunx prisma migrate deploy --schema=./src/prisma/schema.prisma",

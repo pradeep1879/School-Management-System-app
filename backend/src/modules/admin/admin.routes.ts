@@ -31,8 +31,7 @@ router.get("/dashboard", verifyUser(["admin"]), adminController.dashboard);
 // Admin profile (optional but recommended)
 router.get("/profile", verifyUser(["admin"]), adminController.getProfile);
 
-router.patch(
-  "/profile",
+router.patch("/profile",
   verifyUser(["admin"]),
   validateRequest(adminUpdateProfileSchema),
   adminController.updateMyProfile,

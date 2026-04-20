@@ -146,10 +146,12 @@ export const updateMyProfile = async (adminId, body) =>{
         throw new Error("Password and confirm password required");
       }
       
-      if( oldPassword !== admin.password){
+      const isOldPasswordValid = await bcrypt.compare(oldPassword, admin.password);
+
+      if (!isOldPasswordValid) {
         throw new Error("Old passwrod is incorrect")
       }
-
+      
       if (password !== confirmPassword) {
         throw new Error("Passwords do not match");
       }
@@ -168,7 +170,7 @@ export const updateMyProfile = async (adminId, body) =>{
     }
   
     const updatedAdmin = await client.admin.update({
-      where: { id: teacherId },
+      where: { id: adminId },
       data: updateData,
     });
     const { password: _, ...safeAdmin } = updatedAdmin;
@@ -179,7 +181,6 @@ export const updateMyProfile = async (adminId, body) =>{
       admin: safeAdmin,
     };
 }
-
 
 
 

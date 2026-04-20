@@ -24,7 +24,7 @@ export const adminLogout = async () => {
 
 export const updateAdminProfile = (data: {
   email?: string
-  oldPasswrod?: string;
+  oldPassword?: string;
   password?: string
   confirmPassword?: string
 }) => {
@@ -40,6 +40,5 @@ export const getDailyAttendance = async (
 
   return res.data.data
 }
-
 
 

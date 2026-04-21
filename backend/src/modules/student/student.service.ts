@@ -768,13 +768,28 @@ export const getDashboardSummary = async (studentId) => {
           totalClassAverage: 0,
           examCount: 0,
           latestScore: 0,
+          latestClassAverage: 0,
+          latestFailed: false,
+          latestBelowClassAverage: false,
+          failCount: 0,
         };
       }
 
+      const passedLatestSubject = (studentResult?.obtainedMarks || 0) >= subject.passingMarks;
+      const latestClassAverage = exam.subjectAverages[name] || 0;
+
       subjectStatsMap[name].totalStudentPercentage += subjectPercentage;
-      subjectStatsMap[name].totalClassAverage += exam.subjectAverages[name] || 0;
+      subjectStatsMap[name].totalClassAverage += latestClassAverage;
       subjectStatsMap[name].examCount += 1;
       subjectStatsMap[name].latestScore = subjectPercentage;
+      subjectStatsMap[name].latestClassAverage = latestClassAverage;
+      subjectStatsMap[name].latestFailed = !passedLatestSubject;
+      subjectStatsMap[name].latestBelowClassAverage =
+        subjectPercentage < latestClassAverage;
+
+      if (!passedLatestSubject) {
+        subjectStatsMap[name].failCount += 1;
+      }
     }
   }
 
@@ -788,12 +803,36 @@ export const getDashboardSummary = async (studentId) => {
         ? roundTo(subject.totalClassAverage / subject.examCount, 1)
         : 0,
       latestScore: subject.latestScore,
+      latestClassAverage: subject.latestClassAverage,
+      latestFailed: subject.latestFailed,
+      latestBelowClassAverage: subject.latestBelowClassAverage,
+      failCount: subject.failCount,
     }))
     .sort((a, b) => b.averageMarks - a.averageMarks);
 
   const weakSubjects = subjectPerformance
     .slice()
-    .sort((a, b) => a.averageMarks - b.averageMarks)
+    .sort((a, b) => {
+      if (a.latestFailed !== b.latestFailed) {
+        return Number(b.latestFailed) - Number(a.latestFailed);
+      }
+
+      if (a.latestBelowClassAverage !== b.latestBelowClassAverage) {
+        return (
+          Number(b.latestBelowClassAverage) - Number(a.latestBelowClassAverage)
+        );
+      }
+
+      if (a.latestScore !== b.latestScore) {
+        return a.latestScore - b.latestScore;
+      }
+
+      if (a.failCount !== b.failCount) {
+        return b.failCount - a.failCount;
+      }
+
+      return a.averageMarks - b.averageMarks;
+    })
     .slice(0, 2);
 
   const assignedHomework = homeworks.filter(
@@ -897,7 +936,7 @@ export const getDashboardSummary = async (studentId) => {
       insights: {
         weakSubjects: weakSubjects.map((subject) => subject.subject),
         suggestedAction: weakSubjects[0]
-          ? `Practice ${weakSubjects[0].subject} fundamentals and revise the latest concepts.`
+          ? `Practice ${weakSubjects[0].subject} first${weakSubjects[0].latestFailed ? " because it was failed in the latest exam" : weakSubjects[0].latestBelowClassAverage ? " because it is below the latest class average" : ""}, then revise the latest concepts.`
           : "Keep up your momentum with one focused revision session today.",
         recommendedQuizTopic: weakSubjects[0]?.subject || "Mixed Practice",
       },

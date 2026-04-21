@@ -7,6 +7,31 @@ import fs from "fs";
 import config from "../../../config.ts";
 import { normalizeAcademicSession } from "../../utils/session.ts";
 
+const formatDateKey = (value) => {
+  if (!value) return null;
+
+  const date = new Date(value);
+
+  return date.toISOString().split("T")[0];
+};
+
+const roundTo = (value, digits = 1) => {
+  if (!Number.isFinite(value)) return 0;
+
+  return Number(value.toFixed(digits));
+};
+
+const getTrendDirection = (value) => {
+  if (value > 0) return "up";
+  if (value < 0) return "down";
+  return "neutral";
+};
+
+const getAnnouncementScopeLabel = (targetType) => {
+  if (targetType === "CLASS") return "Class announcement";
+  return "School announcement";
+};
+
 export const createStudent = async (body, files, adminId) => {
   const {
     studentName,
@@ -399,6 +424,484 @@ export const getAllStudents = async (query, adminId) => {
     total,
     totalPages: Math.ceil(total / limit),
     students,
+  };
+};
+
+export const getDashboardSummary = async (studentId) => {
+  if (!studentId) {
+    throw new Error("Student ID is required");
+  }
+
+  const student = await client.student.findUnique({
+    where: { id: studentId },
+    select: {
+      id: true,
+      studentName: true,
+      userName: true,
+      imageUrl: true,
+      rollNumber: true,
+      gender: true,
+      contactNo: true,
+      classId: true,
+      class: {
+        select: {
+          id: true,
+          slug: true,
+          section: true,
+          session: true,
+        },
+      },
+    },
+  });
+
+  if (!student) {
+    throw new Error("Student not found");
+  }
+
+  const today = new Date();
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [
+    attendanceRecords,
+    homeworks,
+    publishedExams,
+    upcomingExams,
+    announcements,
+    recentQuizAttempts,
+  ] = await Promise.all([
+    client.attendance.findMany({
+      where: { studentId },
+      select: {
+        status: true,
+        session: {
+          select: {
+            date: true,
+          },
+        },
+      },
+      orderBy: {
+        session: {
+          date: "asc",
+        },
+      },
+    }),
+    client.homework.findMany({
+      where: { classId: student.classId },
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        status: true,
+        subjects: {
+          select: {
+            description: true,
+            subject: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    }),
+    client.exam.findMany({
+      where: {
+        classId: student.classId,
+        status: "PUBLISHED",
+      },
+      select: {
+        id: true,
+        title: true,
+        startDate: true,
+        subjects: {
+          select: {
+            totalMarks: true,
+            passingMarks: true,
+            subject: {
+              select: {
+                name: true,
+              },
+            },
+            results: {
+              select: {
+                studentId: true,
+                obtainedMarks: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startDate: "asc",
+      },
+    }),
+    client.exam.findMany({
+      where: {
+        classId: student.classId,
+        OR: [
+          {
+            status: "ONGOING",
+          },
+          {
+            status: "SCHEDULED",
+            startDate: {
+              gte: todayStart,
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        startDate: true,
+      },
+      orderBy: {
+        startDate: "asc",
+      },
+      take: 4,
+    }),
+    client.announcement.findMany({
+      where: {
+        OR: [
+          { targetType: "SCHOOL" },
+          { targetType: "CLASS", classId: student.classId },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        message: true,
+        targetType: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 4,
+    }),
+    client.aIQuizAttempt.findMany({
+      where: { studentId },
+      select: {
+        percentage: true,
+        submittedAt: true,
+      },
+      orderBy: {
+        startedAt: "desc",
+      },
+      take: 5,
+    }),
+  ]);
+
+  const attendanceMeaningful = attendanceRecords.filter(
+    (record) => record.status !== "HOLIDAY"
+  );
+  const attendedCount = attendanceMeaningful.filter((record) =>
+    ["PRESENT", "LATE"].includes(record.status)
+  ).length;
+  const attendancePercentage = attendanceMeaningful.length
+    ? roundTo((attendedCount / attendanceMeaningful.length) * 100, 1)
+    : 0;
+
+  const recentAttendance = attendanceMeaningful.slice(-60);
+  const previousAttendance = attendanceMeaningful.slice(-120, -60);
+  const recentAttendanceRate = recentAttendance.length
+    ? (recentAttendance.filter((record) => ["PRESENT", "LATE"].includes(record.status)).length /
+        recentAttendance.length) *
+      100
+    : attendancePercentage;
+  const previousAttendanceRate = previousAttendance.length
+    ? (previousAttendance.filter((record) => ["PRESENT", "LATE"].includes(record.status)).length /
+        previousAttendance.length) *
+      100
+    : recentAttendanceRate;
+  const attendanceTrend = roundTo(recentAttendanceRate - previousAttendanceRate, 1);
+
+  const attendanceHeatmap = attendanceRecords.slice(-90).map((record) => ({
+    date: formatDateKey(record.session.date),
+    status: record.status,
+    value:
+      record.status === "PRESENT"
+        ? 4
+        : record.status === "LATE"
+          ? 3
+          : record.status === "LEAVE"
+            ? 2
+            : record.status === "ABSENT"
+              ? 1
+              : 0,
+  }));
+
+  const examSummaries = publishedExams.map((exam) => {
+    const totalMarks = exam.subjects.reduce(
+      (sum, subject) => sum + subject.totalMarks,
+      0
+    );
+    const studentTotals = {};
+    const subjectAverages = {};
+
+    for (const subject of exam.subjects) {
+      const subjectTotal = subject.totalMarks || 0;
+      const totalObtained = subject.results.reduce(
+        (sum, result) => sum + (result.obtainedMarks || 0),
+        0
+      );
+      const resultCount = subject.results.length;
+
+      subjectAverages[subject.subject.name] =
+        resultCount && subjectTotal
+          ? roundTo((totalObtained / (resultCount * subjectTotal)) * 100, 1)
+          : 0;
+
+      for (const result of subject.results) {
+        if (!studentTotals[result.studentId]) {
+          studentTotals[result.studentId] = {
+            obtained: 0,
+            total: 0,
+          };
+        }
+
+        studentTotals[result.studentId].obtained += result.obtainedMarks || 0;
+        studentTotals[result.studentId].total += subjectTotal;
+      }
+    }
+
+    const rankedStudents = Object.entries(studentTotals)
+      .map(([rankStudentId, totals]) => ({
+        studentId: rankStudentId,
+        percentage: totals.total
+          ? roundTo((totals.obtained / totals.total) * 100, 2)
+          : 0,
+      }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    const studentIndex = rankedStudents.findIndex(
+      (item) => item.studentId === studentId
+    );
+    const classAverage = rankedStudents.length
+      ? roundTo(
+          rankedStudents.reduce((sum, item) => sum + item.percentage, 0) /
+            rankedStudents.length,
+          1
+        )
+      : 0;
+    const studentRecord = studentTotals[studentId] || {
+      obtained: 0,
+      total: totalMarks,
+    };
+
+    return {
+      examId: exam.id,
+      examTitle: exam.title,
+      date: formatDateKey(exam.startDate),
+      studentPercentage: studentRecord.total
+        ? roundTo((studentRecord.obtained / studentRecord.total) * 100, 1)
+        : 0,
+      classAverage,
+      rank: studentIndex >= 0 ? studentIndex + 1 : null,
+      classStrength: rankedStudents.length,
+      subjectAverages,
+      subjects: exam.subjects,
+    };
+  });
+
+  const performanceOverview = examSummaries.map((exam) => ({
+    examId: exam.examId,
+    examTitle: exam.examTitle,
+    date: exam.date,
+    studentMarks: exam.studentPercentage,
+    classAverage: exam.classAverage,
+  }));
+
+  const rankTrend = examSummaries.map((exam) => ({
+    examId: exam.examId,
+    examTitle: exam.examTitle,
+    date: exam.date,
+    rank: exam.rank,
+  }));
+
+  const latestExam = examSummaries.length
+    ? examSummaries[examSummaries.length - 1]
+    : null;
+  const previousExam = examSummaries.length > 1
+    ? examSummaries[examSummaries.length - 2]
+    : null;
+
+  const avgMarks = examSummaries.length
+    ? roundTo(
+        examSummaries.reduce((sum, exam) => sum + exam.studentPercentage, 0) /
+          examSummaries.length,
+        1
+      )
+    : 0;
+  const marksTrend = previousExam
+    ? roundTo(latestExam.studentPercentage - previousExam.studentPercentage, 1)
+    : 0;
+  const rankTrendDelta =
+    latestExam && previousExam && latestExam.rank && previousExam.rank
+      ? previousExam.rank - latestExam.rank
+      : 0;
+
+  const subjectStatsMap = {};
+
+  for (const exam of examSummaries) {
+    for (const subject of exam.subjects) {
+      const name = subject.subject.name;
+      const studentResult = subject.results.find(
+        (result) => result.studentId === studentId
+      );
+      const subjectPercentage = subject.totalMarks
+        ? roundTo(
+            ((studentResult?.obtainedMarks || 0) / subject.totalMarks) * 100,
+            1
+          )
+        : 0;
+
+      if (!subjectStatsMap[name]) {
+        subjectStatsMap[name] = {
+          subject: name,
+          totalStudentPercentage: 0,
+          totalClassAverage: 0,
+          examCount: 0,
+          latestScore: 0,
+        };
+      }
+
+      subjectStatsMap[name].totalStudentPercentage += subjectPercentage;
+      subjectStatsMap[name].totalClassAverage += exam.subjectAverages[name] || 0;
+      subjectStatsMap[name].examCount += 1;
+      subjectStatsMap[name].latestScore = subjectPercentage;
+    }
+  }
+
+  const subjectPerformance = Object.values(subjectStatsMap)
+    .map((subject) => ({
+      subject: subject.subject,
+      averageMarks: subject.examCount
+        ? roundTo(subject.totalStudentPercentage / subject.examCount, 1)
+        : 0,
+      classAverage: subject.examCount
+        ? roundTo(subject.totalClassAverage / subject.examCount, 1)
+        : 0,
+      latestScore: subject.latestScore,
+    }))
+    .sort((a, b) => b.averageMarks - a.averageMarks);
+
+  const weakSubjects = subjectPerformance
+    .slice()
+    .sort((a, b) => a.averageMarks - b.averageMarks)
+    .slice(0, 2);
+
+  const assignedHomework = homeworks.filter(
+    (homework) => homework.status === "ASSIGNED"
+  );
+  const pendingHomework = assignedHomework.filter(
+    (homework) => new Date(homework.dueDate) >= todayStart
+  );
+  const completedAssignments = homeworks.filter(
+    (homework) => homework.status === "COMPLETED"
+  ).length;
+
+  const upcoming = [
+    ...upcomingExams.map((exam) => ({
+      id: `exam-${exam.id}`,
+      title: exam.title,
+      type: "exam",
+      date: exam.startDate,
+      status: exam.status,
+      meta: "Exam",
+      url: `/student/exams`,
+    })),
+    ...pendingHomework.slice(0, 4).map((homework) => ({
+      id: `homework-${homework.id}`,
+      title: homework.title,
+      type: "homework",
+      date: homework.dueDate,
+      status: homework.status,
+      meta:
+        homework.subjects.map((subject) => subject.subject.name).join(", ") ||
+        "Homework",
+      url: `/student/homework`,
+    })),
+  ]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 6)
+    .map((item) => ({
+      ...item,
+      date: formatDateKey(item.date),
+    }));
+
+  const recentResults = examSummaries
+    .slice()
+    .reverse()
+    .slice(0, 3)
+    .map((exam) => ({
+      id: `result-${exam.examId}`,
+      type: "result",
+      title: `${exam.examTitle} published`,
+      description: `Scored ${exam.studentPercentage}%${exam.rank ? `, rank #${exam.rank}` : ""}`,
+      date: exam.date,
+      url: `/student/exam/${exam.examId}`,
+    }));
+
+  const recentAnnouncements = announcements.map((announcement) => ({
+    id: `announcement-${announcement.id}`,
+    type: "announcement",
+    title: announcement.title,
+    description: getAnnouncementScopeLabel(announcement.targetType),
+    date: formatDateKey(announcement.createdAt),
+    url: `/student/announcements`,
+  }));
+
+  const recentActivity = [...recentResults, ...recentAnnouncements]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 6);
+
+  const latestQuizScore = recentQuizAttempts[0]?.percentage || 0;
+
+  return {
+    success: true,
+    summary: {
+      student,
+      attendance: {
+        percentage: attendancePercentage,
+        attendedCount,
+        totalCount: attendanceMeaningful.length,
+        trend: attendanceTrend,
+        heatmap: attendanceHeatmap,
+      },
+      avgMarks,
+      rank: latestExam?.rank ?? null,
+      quickStats: {
+        attendance: attendancePercentage,
+        upcomingExams: upcomingExams.length,
+        pendingHomework: assignedHomework.length,
+        latestRank: latestExam?.rank ?? null,
+        avgMarks,
+        completedAssignments,
+        latestQuizScore: roundTo(latestQuizScore, 1),
+      },
+      trends: {
+        performanceOverview,
+        rankTrend,
+        marksTrend,
+        rankTrendDelta,
+      },
+      subjectPerformance,
+      upcoming,
+      recentActivity,
+      insights: {
+        weakSubjects: weakSubjects.map((subject) => subject.subject),
+        suggestedAction: weakSubjects[0]
+          ? `Practice ${weakSubjects[0].subject} fundamentals and revise the latest concepts.`
+          : "Keep up your momentum with one focused revision session today.",
+        recommendedQuizTopic: weakSubjects[0]?.subject || "Mixed Practice",
+      },
+    },
   };
 };
 

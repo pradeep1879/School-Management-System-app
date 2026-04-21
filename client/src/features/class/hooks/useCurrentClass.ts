@@ -49,6 +49,7 @@
 
     return {
       classId,
+      classDetail: data?.classDetail,
       data,
       isLoading,
       role,

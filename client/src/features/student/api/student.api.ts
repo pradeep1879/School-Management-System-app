@@ -1,4 +1,5 @@
 import api from "@/api/axios";
+import type { StudentDashboardResponse } from "../types/dashboard.types";
 
 export const createStudent = (data: FormData) => {
   return api.post("/students", data);
@@ -38,6 +39,12 @@ export const getStudentById = (studentId: string) => {
 export const getMyStudentProfile = () => {
   return api.get("/students/profile")
 }
+
+export const getStudentDashboardSummary = async () => {
+  const res = await api.get<StudentDashboardResponse>("/students/dashboard-summary");
+  console.log("student dahsobard summary", res);
+  return res.data;
+};
 
 export const updateStudentProfile = (data: {
   userName?: string

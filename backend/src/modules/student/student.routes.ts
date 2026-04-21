@@ -41,6 +41,12 @@ router.get(
 );
 
 router.get(
+  "/dashboard-summary",
+  verifyUser(["student"]),
+  studentController.getDashboardSummary
+);
+
+router.get(
   "/:studentId",
   verifyUser(["admin", "teacher"]),
   validateRequest(studentByIdSchema),

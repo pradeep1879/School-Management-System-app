@@ -56,6 +56,16 @@ export const getMyClass = async (req, res, next) => {
   }
 };
 
+export const getDashboardSummary = async (req, res, next) => {
+  try {
+    const data = await studentService.getDashboardSummary(req.userId);
+
+    res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getStudentsByClass = async (req, res, next) => {
   try {
     const { classId } = req.params;

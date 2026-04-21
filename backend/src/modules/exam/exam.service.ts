@@ -767,6 +767,34 @@ export const getStudentDetailedResult = async (
     throw new Error("Results not published yet");
   }
 
+  const subjectIds = exam.subjects.map((subject) => subject.id);
+
+  const [aggregatedResults, failRecords] = await Promise.all([
+    client.examResult.groupBy({
+      by: ["studentId"],
+      where: {
+        examSubjectId: { in: subjectIds },
+        obtainedMarks: { not: null },
+      },
+      _sum: {
+        obtainedMarks: true,
+      },
+    }),
+    client.examResult.findMany({
+      where: {
+        examSubjectId: { in: subjectIds },
+        obtainedMarks: { not: null },
+      },
+      include: {
+        examSubject: {
+          select: {
+            passingMarks: true,
+          },
+        },
+      },
+    }),
+  ]);
+
   let totalObtained = 0;
   let totalMarks = 0;
   let failed = false;
@@ -795,6 +823,46 @@ export const getStudentDetailedResult = async (
 
   const percentage = totalMarks > 0 ? Number(((totalObtained / totalMarks) * 100).toFixed(2)) : 0;
 
+  const failMap = {};
+
+  for (const record of failRecords) {
+    if (record.obtainedMarks < record.examSubject.passingMarks) {
+      failMap[record.studentId] = true;
+    }
+  }
+
+  const rankedResults = aggregatedResults
+    .map((row) => {
+      const obtained = row._sum.obtainedMarks || 0;
+      const resultPercentage =
+        totalMarks > 0
+          ? Number(((obtained / totalMarks) * 100).toFixed(2))
+          : 0;
+
+      return {
+        studentId: row.studentId,
+        percentage: resultPercentage,
+        status: failMap[row.studentId] ? "FAIL" : "PASS",
+      };
+    })
+    .sort((a, b) => b.percentage - a.percentage);
+
+  let rank = 1;
+
+  for (let index = 0; index < rankedResults.length; index++) {
+    if (
+      index > 0 &&
+      rankedResults[index].percentage < rankedResults[index - 1].percentage
+    ) {
+      rank = index + 1;
+    }
+
+    rankedResults[index].rank = rank;
+  }
+
+  const studentRank =
+    rankedResults.find((result) => result.studentId === studentId)?.rank ?? null;
+
   return {
     examId,
     examTitle: exam.title, // Added for frontend
@@ -803,6 +871,7 @@ export const getStudentDetailedResult = async (
     totalObtained,
     totalMarks,
     percentage,
+    rank: studentRank,
     grade: calculateGrade(percentage),
     finalStatus: failed ? "FAIL" : "PASS",
   };

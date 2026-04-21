@@ -73,6 +73,7 @@ const StatCard = ({
   progress,
   icon: Icon,
   accent,
+  className
 }: {
   title: string;
   value: string;
@@ -81,8 +82,9 @@ const StatCard = ({
   progress: number;
   icon: typeof School;
   accent: string;
+  className?: string
 }) => (
-  <Card className="border-border/60 py-0">
+  <Card className={`border-border/60 py-0 ${className}`}>
     <CardContent className="p-5">
       <div className="flex items-center justify-between">
         <div>
@@ -119,7 +121,7 @@ const LoadingBlock = () => (
       <Skeleton className="h-36 rounded-2xl" />
     </div>
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
-      <Skeleton className="h-[420px] rounded-2xl" />
+      <Skeleton className="h-105 rounded-2xl" />
       <div className="grid gap-6">
         <Skeleton className="h-64 rounded-2xl" />
         <Skeleton className="h-64 rounded-2xl" />
@@ -217,13 +219,14 @@ const AdminAnalystics = () => {
           accent="bg-gradient-to-r from-emerald-400 to-emerald-500"
         />
         <StatCard
+          className="col-span-2 xl:col-span-1"
           title="Class Coverage"
           value={`${classCoverage}%`}
           metaLeft={`${classesMarked} marked`}
           metaRight={`${pendingClasses} pending`}
           progress={classCoverage}
           icon={BookCopy}
-          accent="bg-gradient-to-r from-sky-400 to-sky-500"
+          accent="bg-gradient-to-r from-sky-400 to-sky-500 col-span-2"
         />
       </div>
 

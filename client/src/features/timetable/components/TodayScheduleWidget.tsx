@@ -2,6 +2,7 @@ import { Clock3 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/store/auth.store";
 import { useMyTimetable } from "../hooks/useTimetable";
 import { formatTimeRange, getTodaySlots, isCurrentSlot } from "../utils";
 
@@ -12,13 +13,20 @@ type TodayScheduleWidgetProps = {
 export const TodayScheduleWidget = ({
   title = "Today's Schedule",
 }: TodayScheduleWidgetProps) => {
+  const role = useAuthStore((state) => state.role);
+  const userId = useAuthStore((state) => state.userId);
   const { data, isLoading } = useMyTimetable(true);
 
   if (isLoading) {
     return <Skeleton className="h-64 w-full rounded-3xl" />;
   }
 
-  const slots = getTodaySlots(data?.slots || []);
+  const scopedSlots =
+    role === "teacher"
+      ? (data?.slots || []).filter((slot) => slot.teacher.id === userId)
+      : data?.slots || [];
+
+  const slots = getTodaySlots(scopedSlots);
 
   return (
     <Card className="rounded-3xl bg-card/80">
@@ -52,7 +60,7 @@ export const TodayScheduleWidget = ({
           ))
         ) : (
           <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
-            No classes scheduled for today.
+            No classes scheduled for you today.
           </div>
         )}
       </CardContent>

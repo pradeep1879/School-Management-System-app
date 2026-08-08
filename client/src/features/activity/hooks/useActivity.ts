@@ -42,7 +42,7 @@ export const useUpdateActivityStatus = () => {
     mutationFn: ({ activityId, status }: UpdatePayload) =>
       updateActivity(activityId, status),
 
-    // 🔥 OPTIMISTIC UPDATE
+    //  OPTIMISTIC UPDATE
     onMutate: async ({ activityId, status, classId }) => {
       await queryClient.cancelQueries({
         queryKey: ["activities", classId],

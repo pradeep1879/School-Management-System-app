@@ -23,7 +23,7 @@ export const TodayScheduleWidget = ({
 
   const scopedSlots =
     role === "teacher"
-      ? (data?.slots || []).filter((slot) => slot.teacher.id === userId)
+      ? (data?.slots || []).filter((slot: any) => slot.teacher.id === userId)
       : data?.slots || [];
 
   const slots = getTodaySlots(scopedSlots);

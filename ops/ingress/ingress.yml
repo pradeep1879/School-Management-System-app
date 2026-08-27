@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: school-ingress
+  namespace: default
+
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+spec:
+  ingressClassName: nginx
+
+  tls:
+    - hosts:
+        - skool.learnhub.art
+        - skool-backend.learnhub.art
+      secretName: school-tls
+
+  rules:
+
+    # Frontend
+    - host: skool.learnhub.art
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 5173
+
+    # Backend API
+    - host: skool-backend.learnhub.art
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 3000
